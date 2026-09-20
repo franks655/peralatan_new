@@ -312,6 +312,10 @@ const Invoice = () => {
             .total-section { margin-top: 20px; text-align: right; }
             .total-label { font-size: 14px; font-weight: bold; }
             .total-value { font-size: 18px; font-weight: bold; color: #000; }
+            .signatures { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 36px; text-align: center; page-break-inside: avoid; }
+            .sig-box { display: flex; flex-direction: column; justify-content: space-between; height: 105px; }
+            .sig-title { font-size: 10.5px; font-weight: 600; color: #475569; }
+            .sig-line { border-top: 1px solid #334155; width: 80%; margin: 0 auto; padding-top: 4px; font-weight: 600; font-size: 11px; color: #0f172a; }
             .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #ddd; padding-top: 10px; }
             @media print { body { margin: 0; } }
           </style>
@@ -385,6 +389,25 @@ const Invoice = () => {
           <div class="total-section">
             <div class="total-label">Total Invoice:</div>
             <div class="total-value">${formatRupiah(invoice.total_invoice)}</div>
+          </div>
+
+          <div class="signatures">
+            <div class="sig-box">
+              <div class="sig-title">Mengetahui:</div>
+              <div class="sig-line">( Manajer Peralatan )</div>
+            </div>
+            <div class="sig-box">
+              <div class="sig-title">Menyetujui:</div>
+              <div class="sig-line">( Project Manager )</div>
+            </div>
+            <div class="sig-box">
+              <div class="sig-title">Koordinator:</div>
+              <div class="sig-line">( Koordinator Project )</div>
+            </div>
+            <div class="sig-box">
+              <div class="sig-title">Kepala Divisi:</div>
+              <div class="sig-line">( Kepala Divisi Infrastruktur )</div>
+            </div>
           </div>
 
           <div class="footer">
