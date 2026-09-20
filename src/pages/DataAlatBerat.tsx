@@ -40,6 +40,7 @@ type LocalAlatBerat = Omit<AlatBerat, 'noSeri'> & {
   serviceTerakhir?: string;
   serviceBerikutnya?: string;
   foto?: string | null;
+  harga_sewa?: number;
 };
 
 const DataAlatBerat = () => {
@@ -217,6 +218,7 @@ const DataAlatBerat = () => {
             <td style="border: 1px solid #ddd; padding: 8px;">${item.noSeri || '-'}</td>
             <td style="border: 1px solid #ddd; padding: 8px;">${item.tahunPembuatan || '-'}</td>
             <td style="border: 1px solid #ddd; padding: 8px;">${item.kepemilikan || '-'}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">${item.harga_sewa ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.harga_sewa) : '-'}</td>
             <td style="border: 1px solid #ddd; padding: 8px;">${item.lokasi_saat_ini || item.lokasi || '-'}</td>
             <td style="border: 1px solid #ddd; padding: 8px;">${item.lokasi_sebelum || item.lokasi_sebelumnya || '-'}</td>
             <td style="border: 1px solid #ddd; padding: 8px;">${item.kondisi ? item.kondisi.charAt(0).toUpperCase() + item.kondisi.slice(1).toLowerCase() : '-'}</td>
@@ -332,6 +334,7 @@ const DataAlatBerat = () => {
                 <th>No. Seri</th>
                 <th>Tahun</th>
                 <th>Kepemilikan</th>
+                <th>Harga Sewa</th>
                 <th>Lokasi Saat Ini</th>
                 <th>Lokasi Sebelumnya</th>
                 <th>Kondisi</th>
@@ -1027,6 +1030,7 @@ const DataAlatBerat = () => {
                   <TableHead>No. Seri</TableHead>
                   <TableHead>Tahun</TableHead>
                   <TableHead>Kepemilikan</TableHead>
+                  <TableHead>Harga Sewa</TableHead>
                   <TableHead>Lokasi Saat Ini</TableHead>
                   <TableHead>Lokasi Sebelumnya</TableHead>
                   <TableHead>Kondisi</TableHead>
@@ -1041,13 +1045,13 @@ const DataAlatBerat = () => {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={canShowActions ? 16 : 15} className="text-center py-4">
+                    <TableCell colSpan={canShowActions ? 17 : 16} className="text-center py-4">
                       Memuat data...
                     </TableCell>
                   </TableRow>
                 ) : filteredData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={canShowActions ? 16 : 15} className="text-center py-4">
+                    <TableCell colSpan={canShowActions ? 17 : 16} className="text-center py-4">
                       {searchQuery ? 'Tidak ada data yang cocok dengan pencarian' : 'Tidak ada data alat berat'}
                     </TableCell>
                   </TableRow>
@@ -1076,6 +1080,9 @@ const DataAlatBerat = () => {
                         <TableCell>{item.noSeri || '-'}</TableCell>
                         <TableCell>{item.tahunPembuatan || '-'}</TableCell>
                         <TableCell>{item.kepemilikan || '-'}</TableCell>
+                        <TableCell>
+                          {item.harga_sewa ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.harga_sewa) : '-'}
+                        </TableCell>
                         <TableCell>{item.lokasi_saat_ini || item.lokasi || '-'}</TableCell>
                         <TableCell>{item.lokasi_sebelum || item.lokasi_sebelumnya || '-'}</TableCell>
                         <TableCell>

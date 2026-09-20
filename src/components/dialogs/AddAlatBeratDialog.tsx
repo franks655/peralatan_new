@@ -48,6 +48,7 @@ export function AddAlatBeratDialog({ onSubmit, className }: AddAlatBeratDialogPr
     serviceTerakhir: '',
     serviceBerikutnya: '',
     foto: '',
+    harga_sewa: undefined,
   } as Omit<AlatBerat, 'id'>);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -95,6 +96,7 @@ export function AddAlatBeratDialog({ onSubmit, className }: AddAlatBeratDialogPr
         serviceTerakhir: '',
         serviceBerikutnya: '',
         foto: '',
+        harga_sewa: undefined,
       } as Omit<AlatBerat, 'id'>);
     } finally {
       setIsLoading(false);
@@ -271,7 +273,21 @@ export function AddAlatBeratDialog({ onSubmit, className }: AddAlatBeratDialogPr
               </div>
             </div>
 
-            {/* Row 6: Upload 5 Foto */}
+            {/* Row 6: Harga Sewa */}
+            <div className="grid gap-2">
+              <Label htmlFor="harga_sewa">Harga Sewa (Rp)</Label>
+              <Input
+                id="harga_sewa"
+                type="number"
+                value={formData.harga_sewa || ''}
+                onChange={(e) => setFormData({ ...formData, harga_sewa: e.target.value ? parseFloat(e.target.value) : undefined })}
+                placeholder="0.00"
+                step="0.01"
+              />
+              <p className="text-xs text-muted-foreground">Harga sewa per unit (isi jika alat disewa)</p>
+            </div>
+
+            {/* Row 7: Upload 5 Foto */}
             <div className="pt-2 border-t border-slate-100">
               <MultiFotoUploader
                 value={formData.foto}

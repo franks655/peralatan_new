@@ -94,6 +94,7 @@ function pathToPageKey(path: string): string {
     '/stock-bbm': 'stockBBM',
     '/stock-oli': 'stockOli',
     '/time-sheet': 'timeSheet',
+    '/invoice': 'invoice',
     '/dashboard': 'dashboard',
     '/system/manajemen-user': 'system',
     '/system/manajemen-akses-user': 'system',

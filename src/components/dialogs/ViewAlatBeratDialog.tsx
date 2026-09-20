@@ -113,6 +113,18 @@ export function ViewAlatBeratDialog({ alatBerat }: ViewAlatBeratDialogProps) {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-500">
+                  Harga Sewa
+                </label>
+                <p className="text-sm">
+                  {alatBerat.harga_sewa
+                    ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(alatBerat.harga_sewa)
+                    : "-"}
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-500">
                   Lokasi Saat Ini
                 </label>
                 <p className="text-sm">{alatBerat.lokasi_saat_ini || alatBerat.lokasi || "-"}</p>

@@ -81,6 +81,7 @@ export interface AlatBerat {
   serviceTerakhir?: string;
   serviceBerikutnya?: string;
   foto?: string | null;
+  harga_sewa?: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -122,6 +123,42 @@ export interface LokasiProyek {
   status?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
+}
+
+export interface InvoiceItem {
+  id?: string;
+  invoice_id?: string;
+  alat_berat_id: string;
+  no_lambung: string;
+  nama_alat: string;
+  qty: number;
+  satuan: string;
+  harga_sewa: number;
+  lama_sewa_jam: number;
+  satuan_lama_sewa: string;
+  keterangan?: string;
+  total_item: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Invoice {
+  id?: string;
+  no_invoice: string;
+  tanggal: string;
+  nama_penyewa: string;
+  nama_perusahaan: string;
+  lokasi_proyek_id?: string;
+  lokasi_proyek?: string;
+  periode_bulan: number;
+  periode_tahun: number;
+  lampiran?: string;
+  keterangan?: string;
+  total_invoice: number;
+  status: string;
+  items?: InvoiceItem[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface BiayaKendaraan {

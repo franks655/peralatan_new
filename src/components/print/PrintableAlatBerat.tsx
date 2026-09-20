@@ -34,6 +34,7 @@ export const PrintableAlatBerat: React.FC<PrintableAlatBeratProps> = ({
             <th className="border p-2 text-left">Tipe</th>
             <th className="border p-2 text-left">Tahun</th>
             <th className="border p-2 text-left">Kepemilikan</th>
+            <th className="border p-2 text-left">Harga Sewa</th>
             <th className="border p-2 text-left">Lokasi Saat Ini</th>
             <th className="border p-2 text-left">Lokasi Sebelumnya</th>
             <th className="border p-2 text-left">Kondisi</th>
@@ -54,6 +55,11 @@ export const PrintableAlatBerat: React.FC<PrintableAlatBeratProps> = ({
               <td className="border p-2">{item.tipe || "-"}</td>
               <td className="border p-2">{item.tahun_perolehan || item.tahunPembuatan || "-"}</td>
               <td className="border p-2">{item.kepemilikan || "-"}</td>
+              <td className="border p-2">
+                {item.harga_sewa
+                  ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.harga_sewa)
+                  : "-"}
+              </td>
               <td className="border p-2">{item.lokasi_saat_ini || item.lokasi || "-"}</td>
               <td className="border p-2">{item.lokasi_sebelum || item.lokasi_sebelumnya || "-"}</td>
               <td className="border p-2">{item.kondisi || "-"}</td>

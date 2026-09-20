@@ -33,6 +33,7 @@ export function EditAlatBeratDialog({ alatBerat, open, onOpenChange, onSubmit }:
       kepemilikan: alatBerat.kepemilikan || '',
       serviceTerakhir: formatDateForInput(alatBerat.serviceTerakhir),
       serviceBerikutnya: formatDateForInput(alatBerat.serviceBerikutnya),
+      harga_sewa: alatBerat.harga_sewa || undefined,
     });
   }, [alatBerat]);
 
@@ -215,6 +216,19 @@ export function EditAlatBeratDialog({ alatBerat, open, onOpenChange, onSubmit }:
                 onChange={(e) => setFormData({ ...formData, serviceBerikutnya: e.target.value })}
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="harga_sewa">Harga Sewa (Rp)</Label>
+            <Input
+              id="harga_sewa"
+              type="number"
+              value={formData.harga_sewa || ''}
+              onChange={(e) => setFormData({ ...formData, harga_sewa: e.target.value ? parseFloat(e.target.value) : undefined })}
+              placeholder="0.00"
+              step="0.01"
+            />
+            <p className="text-xs text-muted-foreground">Harga sewa per unit (isi jika alat disewa)</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

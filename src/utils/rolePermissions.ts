@@ -33,6 +33,7 @@ export const ALL_PAGES: { key: string; label: string }[] = [
   { key: 'stockBBM', label: 'Stock BBM' },
   { key: 'stockOli', label: 'Stock Oli' },
   { key: 'timeSheet', label: 'Time Sheet' },
+  { key: 'invoice', label: 'Invoice' },
   { key: 'lokasiProyek', label: 'Lokasi Proyek' },
   { key: 'system', label: 'System' },
 ];

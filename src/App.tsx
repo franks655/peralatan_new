@@ -39,6 +39,7 @@ import LaporanKegiatanMekanik from "./pages/laporan/LaporanKegiatanMekanik";
 import StockBBM from "./pages/StockBBM";
 import StockOli from "./pages/StockOli";
 import TimeSheet from "./pages/TimeSheet";
+import Invoice from "./pages/Invoice";
 
 // System pages
 import ManajemenUser from "./pages/system/ManajemenUser";
@@ -99,6 +100,7 @@ const App = () => {
                       <Route path="/stock-sparepart" element={<PageGuard pageKey="stockSparepart"><StockSparepart /></PageGuard>} />
                       <Route path="/stock-oli" element={<PageGuard pageKey="stockOli"><StockOli /></PageGuard>} />
                       <Route path="/time-sheet" element={<PageGuard pageKey="timeSheet"><TimeSheet /></PageGuard>} />
+                      <Route path="/invoice" element={<PageGuard pageKey="invoice"><Invoice /></PageGuard>} />
                       {/* System routes */}
                       <Route path="/system/manajemen-user" element={<PageGuard pageKey="system"><ManajemenUser /></PageGuard>} />
                       <Route path="/system/manajemen-akses-user" element={<PageGuard pageKey="system"><ManajemenAksesUser /></PageGuard>} />
