@@ -528,7 +528,7 @@ const PemeriksaanSection = memo(({
 <body>
   <div class="header">
     <div>
-      <div class="company">PT. PT. REKA UTAMA PERSADA</div>
+      <div class="company">PT. REKA UTAMA PERSADA</div>
       <div class="divisi">Divisi Peralatan & Logistik</div>
     </div>
     <div style="text-align: right; font-size: 10px; color: #64748b;">
@@ -1073,7 +1073,7 @@ const SPKSection = memo(({
 <body>
   <div class="header">
     <div>
-      <div class="company">PT. PT. REKA UTAMA PERSADA</div>
+      <div class="company">PT. REKA UTAMA PERSADA</div>
       <div class="divisi">Divisi Peralatan & Logistik</div>
     </div>
     <div style="text-align: right; font-size: 10px; color: #64748b;">
