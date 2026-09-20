@@ -503,7 +503,6 @@ const Invoice = () => {
                   onChange={(value) => setFormData({ ...formData, lokasi_proyek_id: value })}
                 />
               </div>
-            </div>
               <div className="space-y-2">
                 <Label htmlFor="lampiran">Lampiran (Upload File)</Label>
                 <div className="space-y-2">
