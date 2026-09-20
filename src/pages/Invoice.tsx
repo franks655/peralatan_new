@@ -11,6 +11,7 @@ import { useInvoice, useAddInvoice, useUpdateInvoice, useDeleteInvoice, getTotal
 import { useAlatBerat } from '@/hooks/useAlatBerat';
 import { useLokasiProyek } from '@/hooks/useLokasiProyek';
 import { ComboboxLokasiProyek } from '@/components/ComboboxLokasiProyek';
+import { SelectAlatBeratSearchable } from '@/components/SelectAlatBeratSearchable';
 import type { Invoice, InvoiceItem } from '@/types';
 
 const formatRupiah = (amount: number): string => {
@@ -438,12 +439,32 @@ const Invoice = () => {
                     id="lampiran_files"
                     type="file"
                     multiple
+                    ref={(input) => {
+                      if (input) {
+                        // Store ref to access click method
+                        (input as any).fileInputRef = input;
+                      }
+                    }}
                     onChange={(e) => {
                       const files = Array.from(e.target.files || []);
                       setUploadedFiles(files);
                     }}
                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    style={{ display: 'none' }}
                   />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const fileInput = document.getElementById('lampiran_files') as HTMLInputElement;
+                      if (fileInput) {
+                        fileInput.click();
+                      }
+                    }}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Pilih File Lampiran
+                  </Button>
                   {uploadedFiles.length > 0 && (
                     <div className="text-sm text-muted-foreground">
                       {uploadedFiles.length} file(s) dipilih: {uploadedFiles.map(f => f.name).join(', ')}
@@ -494,21 +515,13 @@ const Invoice = () => {
             <div className="border rounded-lg p-4 space-y-4">
               <h3 className="font-semibold">Tambah Alat ke Invoice</h3>
               <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="alat">Pilih Alat</Label>
-                  <select
-                    id="alat"
+                <div className="space-y-2 col-span-2">
+                  <SelectAlatBeratSearchable
                     value={selectedAlat}
-                    onChange={(e) => setSelectedAlat(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-md"
-                  >
-                    <option value="">-- Pilih Alat --</option>
-                    {alatBeratData.map((alat) => (
-                      <option key={alat.id} value={alat.id}>
-                        {alat.no_lambung} - {alat.nama_alat}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setSelectedAlat}
+                    alatBeratData={alatBeratData}
+                    placeholder="-- Pilih Alat --"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="qty">QTY</Label>
