@@ -119,6 +119,7 @@ const Invoice = () => {
     console.log('Adding item for alat:', {
       no_lambung: alat.no_lambung,
       nama_alat: alat.nama_alat,
+      harga_sewa: alat.harga_sewa,
       periode_bulan: formData.periode_bulan,
       periode_tahun: formData.periode_tahun
     });
@@ -132,17 +133,28 @@ const Invoice = () => {
 
     console.log('Total jam from timesheet:', totalJam);
 
+    const hargaSewa = alat.harga_sewa || 0;
+    const qty = itemForm.qty || 1;
+    const totalItem = qty * hargaSewa * totalJam;
+
+    console.log('Calculation:', {
+      hargaSewa,
+      qty,
+      totalJam,
+      totalItem
+    });
+
     const newItem: InvoiceItem = {
       alat_berat_id: alat.id,
       no_lambung: alat.no_lambung,
       nama_alat: alat.nama_alat,
-      qty: itemForm.qty || 1,
+      qty: qty,
       satuan: itemForm.satuan || 'Unit',
-      harga_sewa: alat.harga_sewa || 0,
+      harga_sewa: hargaSewa,
       lama_sewa_jam: totalJam,
       satuan_lama_sewa: itemForm.satuan_lama_sewa || 'Jam',
       keterangan: itemForm.keterangan || '',
-      total_item: (itemForm.qty || 1) * (alat.harga_sewa || 0) * totalJam,
+      total_item: totalItem,
     };
 
     const updatedItems = [...(formData.items || []), newItem];

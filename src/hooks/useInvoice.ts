@@ -143,9 +143,9 @@ export const getTotalJamFromTimesheet = async (
   });
 
   try {
-    // Use backend API to fetch timesheet data
+    // Use backend API to fetch timesheet data with proper date range filter
     const response = await fetch(
-      `${API_URL}/api/timesheet?eq=${JSON.stringify({ no_lambung })}&gte=${JSON.stringify({ tanggal: startDate.toISOString().split('T')[0] })}&lte=${JSON.stringify({ tanggal: endDate.toISOString().split('T')[0] })}`
+      `${API_URL}/api/timesheet?eq=${encodeURIComponent(JSON.stringify({ no_lambung }))}&gte=${encodeURIComponent(JSON.stringify({ tanggal: startDate.toISOString().split('T')[0] }))}&lte=${encodeURIComponent(JSON.stringify({ tanggal: endDate.toISOString().split('T')[0] }))}`
     );
     
     const result = await response.json();
