@@ -34,14 +34,13 @@ const Invoice = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [currentInvoice, setCurrentInvoice] = useState<Invoice | null>(null);
-  const [formData, setFormData] = useState<Omit<Invoice, 'id' | 'created_at' | 'updated_at'>>({
+  const [formData, setFormData] = useState<Omit<Invoice, 'id' | 'created_at' | 'updated_at' | 'lokasi'>>({
     no_invoice: '',
     tanggal: new Date().toISOString().split('T')[0],
     nama_penyewa: '',
     nama_perusahaan: '',
     pekerjaan: '',
     lokasi_proyek_id: '',
-    lokasi: '',
     periode_bulan: new Date().getMonth() + 1,
     periode_tahun: new Date().getFullYear(),
     lampiran: '',
@@ -68,7 +67,6 @@ const Invoice = () => {
       nama_perusahaan: '',
       pekerjaan: '',
       lokasi_proyek_id: '',
-      lokasi: '',
       periode_bulan: new Date().getMonth() + 1,
       periode_tahun: new Date().getFullYear(),
       lampiran: '',
@@ -370,7 +368,7 @@ const Invoice = () => {
             <div class="info-row"><span class="info-label">Nama Penyewa:</span><span class="info-val">${invoice.nama_penyewa}</span></div>
             <div class="info-row"><span class="info-label">Nama Perusahaan:</span><span class="info-val">${invoice.nama_perusahaan}</span></div>
             <div class="info-row"><span class="info-label">Pekerjaan:</span><span class="info-val">${invoice.pekerjaan || '-'}</span></div>
-            <div class="info-row"><span class="info-label">Lokasi Pekerjaan:</span><span class="info-val">${invoice.lokasi || lokasiProyek?.lokasi || '-'}</span></div>
+            <div class="info-row"><span class="info-label">Lokasi Pekerjaan:</span><span class="info-val">${invoice.lokasi || '-'}</span></div>
             <div class="info-row"><span class="info-label">Lampiran:</span><span class="info-val">${invoice.lampiran ? invoice.lampiran.split(',').map(path => `<a href="${import.meta.env.VITE_API_URL}${path}" target="_blank" style="color: #0066cc;">${path.split('/').pop()}</a>`).join(', ') : '-'}</span></div>
             <div class="info-row"><span class="info-label">Keterangan:</span><span class="info-val">${invoice.keterangan || '-'}</span></div>
           </div>
@@ -502,26 +500,9 @@ const Invoice = () => {
                 <Label htmlFor="lokasi_proyek">Lokasi Proyek</Label>
                 <ComboboxLokasiProyek
                   value={formData.lokasi_proyek_id || ''}
-                  onChange={(value) => {
-                    setFormData({ ...formData, lokasi_proyek_id: value });
-                    // Auto-fill lokasi when lokasi_proyek is selected
-                    const selectedLokasi = lokasiProyekData.find((lp) => lp.id === value);
-                    if (selectedLokasi) {
-                      setFormData({ ...formData, lokasi_proyek_id: value, lokasi: selectedLokasi.lokasi });
-                    }
-                  }}
+                  onChange={(value) => setFormData({ ...formData, lokasi_proyek_id: value })}
                 />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="lokasi">Lokasi Pekerjaan</Label>
-              <Input
-                id="lokasi"
-                value={formData.lokasi || ''}
-                onChange={(e) => setFormData({ ...formData, lokasi: e.target.value })}
-                placeholder="Lokasi pekerjaan (otomatis dari Lokasi Proyek atau input manual)"
-              />
             </div>
               <div className="space-y-2">
                 <Label htmlFor="lampiran">Lampiran (Upload File)</Label>

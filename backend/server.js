@@ -265,7 +265,15 @@ app.get('/api/invoice', async (req, res) => {
     const built = buildSelect('invoice', req.query);
     console.log('[GET /invoice] SQL:', built.sql, '| values:', built.values);
     const { sql, values, maybeSingle, single } = built;
-    const [rows] = await db.query(sql, values);
+    
+    // Modify SQL to JOIN with lokasi_proyek to get location name
+    const selectWithJoin = sql.replace(
+      /SELECT \* FROM `invoice`/,
+      `SELECT invoice.*, lokasi_proyek.lokasi as lokasi_proyek_name, lokasi_proyek.nama_proyek as nama_proyek_name FROM invoice LEFT JOIN lokasi_proyek ON invoice.lokasi_proyek_id = lokasi_proyek.id`
+    );
+    
+    console.log('[GET /invoice] Modified SQL:', selectWithJoin);
+    const [rows] = await db.query(selectWithJoin, values);
 
     // Fetch items for each invoice
     const invoicesWithItems = [];
@@ -274,8 +282,13 @@ app.get('/api/invoice', async (req, res) => {
         'SELECT * FROM `invoice_items` WHERE `invoice_id` = ?',
         [invoice.id]
       );
+      // Add lokasi_proyek_name to the invoice data
+      const processedInvoice = processRow(invoice);
+      if (processedInvoice.lokasi_proyek_name) {
+        processedInvoice.lokasi = processedInvoice.lokasi_proyek_name;
+      }
       invoicesWithItems.push({
-        ...processRow(invoice),
+        ...processedInvoice,
         items: items.map(processRow)
       });
     }

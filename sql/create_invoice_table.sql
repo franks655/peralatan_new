@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS `invoice` (
   `nama_perusahaan` VARCHAR(255) NOT NULL,
   `pekerjaan` VARCHAR(255) NULL COMMENT 'Nama pekerjaan/proyek',
   `lokasi_proyek_id` VARCHAR(36) NULL,
-  `lokasi` VARCHAR(255) NULL COMMENT 'Lokasi pekerjaan (manual atau otomatis dari lokasi_proyek)',
   `periode_bulan` INT NOT NULL COMMENT '1-12',
   `periode_tahun` INT NOT NULL COMMENT '2026, dll',
   `lampiran` TEXT NULL COMMENT 'Nama file lampiran yang diupload',
