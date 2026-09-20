@@ -307,7 +307,7 @@ const SPKSection = memo(({
 <body>
   <div class="header">
     <div>
-      <div class="company">PT. CIPTA PERDANA</div>
+      <div class="company">PT. REKA UTAMA PERSADA</div>
       <div class="divisi">Divisi Peralatan & Logistik</div>
     </div>
     <div style="text-align: right; font-size: 10px; color: #64748b;">
@@ -388,7 +388,7 @@ const SPKSection = memo(({
   </div>
 
   <div class="footer">
-    Dokumen ini dicetak otomatis dari Sistem Informasi Peralatan PT Cipta Perdana
+    Dokumen ini dicetak otomatis dari Sistem Informasi Peralatan PT REKA UTAMA PERSADA 
   </div>
 
   <script>
@@ -1028,7 +1028,7 @@ export default function PerawatanBerkala() {
   th{background:#f2f2f2;font-weight:bold;text-align:center}
   td.num{text-align:right}
 </style></head><body>
-<div class="hdr"><div class="co">CIPTA PERDANA</div><div class="div">Peralatan</div></div>
+<div class="hdr"><div class="co">REKA UTAMA PERSADA</div><div class="div">Peralatan</div></div>
 <h1>PERMOHONAN PERAWATAN BERKALA</h1>
 <div class="dt">Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
 <table><thead><tr>

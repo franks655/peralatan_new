@@ -621,7 +621,7 @@ const PemeriksaanSection = memo(({
   </div>
 
   <div class="footer">
-    Dokumen ini dicetak otomatis dari Sistem Informasi Peralatan PT PT. REKA UTAMA PERSADA
+    Dokumen ini dicetak otomatis dari Sistem Informasi Peralatan PT. REKA UTAMA PERSADA
   </div>
 
   <script>
@@ -1159,7 +1159,7 @@ const SPKSection = memo(({
   </div>
 
   <div class="footer">
-    Dokumen ini dicetak otomatis dari Sistem Informasi Peralatan PT PT. REKA UTAMA PERSADA
+    Dokumen ini dicetak otomatis dari Sistem Informasi Peralatan PT. REKA UTAMA PERSADA
   </div>
 
   <script>
