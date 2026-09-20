@@ -1,0 +1,2 @@
+-- Add lokasi_pekerjaan column to invoice table for direct location input
+ALTER TABLE `invoice` ADD COLUMN `lokasi_pekerjaan` VARCHAR(255) NULL COMMENT 'Lokasi pekerjaan langsung' AFTER `lokasi_proyek_id`;

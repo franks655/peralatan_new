@@ -151,6 +151,7 @@ export interface Invoice {
   pekerjaan?: string;
   lokasi_proyek_id?: string;
   lokasi_proyek?: string;
+  lokasi_pekerjaan?: string;
   periode_bulan: number;
   periode_tahun: number;
   lampiran?: string;

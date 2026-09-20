@@ -39,7 +39,9 @@ const Invoice = () => {
     tanggal: new Date().toISOString().split('T')[0],
     nama_penyewa: '',
     nama_perusahaan: '',
+    pekerjaan: '',
     lokasi_proyek_id: '',
+    lokasi_pekerjaan: '',
     periode_bulan: new Date().getMonth() + 1,
     periode_tahun: new Date().getFullYear(),
     lampiran: '',
@@ -66,6 +68,7 @@ const Invoice = () => {
       nama_perusahaan: '',
       pekerjaan: '',
       lokasi_proyek_id: '',
+      lokasi_pekerjaan: '',
       periode_bulan: new Date().getMonth() + 1,
       periode_tahun: new Date().getFullYear(),
       lampiran: '',
@@ -283,6 +286,13 @@ const Invoice = () => {
     const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
     const periodeText = `${monthNames[invoice.periode_bulan - 1]} ${invoice.periode_tahun}`;
 
+    console.log('Invoice data for print:', {
+      lokasi_proyek_id: invoice.lokasi_proyek_id,
+      lokasi_proyek: invoice.lokasi_proyek,
+      lokasi_pekerjaan: invoice.lokasi_pekerjaan,
+      lokasiProyekFromDB: lokasiProyek
+    });
+
     const itemsHtml = invoice.items?.map((item, index) => `
       <tr>
         <td class="center">${index + 1}</td>
@@ -346,7 +356,6 @@ const Invoice = () => {
               <div class="company-address">Jl. Pangkalan No. 31 RT. 003/RW. 001, Kel. Bantargebang, Kec. Bantar Gebang, Kota Bekasi 17151</div>
             </div>
             <div class="print-info">
-              <div>Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
               <div>Status: <strong>${invoice.status === 'paid' ? 'Lunas (Paid)' : invoice.status === 'sent' ? 'Terkirim (Sent)' : 'Draft'}</strong></div>
             </div>
           </div>
@@ -361,8 +370,8 @@ const Invoice = () => {
             <div class="info-row"><span class="info-label">Periode:</span><span class="info-val">${periodeText}</span></div>
             <div class="info-row"><span class="info-label">Nama Penyewa:</span><span class="info-val">${invoice.nama_penyewa}</span></div>
             <div class="info-row"><span class="info-label">Nama Perusahaan:</span><span class="info-val">${invoice.nama_perusahaan}</span></div>
-            <div class="info-row"><span class="info-label">Pekerjaan:</span><span class="info-val">${invoice.pekerjaan || lokasiProyek?.namaProyek || '-'}</span></div>
-            <div class="info-row"><span class="info-label">Lokasi Pekerjaan:</span><span class="info-val">${lokasiProyek?.lokasi || '-'}</span></div>
+            <div class="info-row"><span class="info-label">Pekerjaan:</span><span class="info-val">${invoice.pekerjaan || '-'}</span></div>
+            <div class="info-row"><span class="info-label">Lokasi Pekerjaan:</span><span class="info-val">${invoice.lokasi_proyek || invoice.lokasi_pekerjaan || lokasiProyek?.lokasi || '-'}</span></div>
             <div class="info-row"><span class="info-label">Lampiran:</span><span class="info-val">${invoice.lampiran ? invoice.lampiran.split(',').map(path => `<a href="${import.meta.env.VITE_API_URL}${path}" target="_blank" style="color: #0066cc;">${path.split('/').pop()}</a>`).join(', ') : '-'}</span></div>
             <div class="info-row"><span class="info-label">Keterangan:</span><span class="info-val">${invoice.keterangan || '-'}</span></div>
           </div>
@@ -495,6 +504,15 @@ const Invoice = () => {
                 <ComboboxLokasiProyek
                   value={formData.lokasi_proyek_id || ''}
                   onChange={(value) => setFormData({ ...formData, lokasi_proyek_id: value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lokasi_pekerjaan">Lokasi Pekerjaan (Manual)</Label>
+                <Input
+                  id="lokasi_pekerjaan"
+                  value={formData.lokasi_pekerjaan || ''}
+                  onChange={(e) => setFormData({ ...formData, lokasi_pekerjaan: e.target.value })}
+                  placeholder="Lokasi pekerjaan manual (opsional)"
                 />
               </div>
               <div className="space-y-2">
