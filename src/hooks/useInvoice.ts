@@ -170,7 +170,7 @@ export const getTotalJamFromTimesheet = async (
 
   try {
     // Build query parameters separately to ensure proper encoding
-    const eqParams = JSON.stringify({ no_lambung });
+    const eqParams = JSON.stringify({ no_lambung: noLambung });
     const gteParams = JSON.stringify({ tanggal: startDateStr });
     const lteParams = JSON.stringify({ tanggal: endDateStr });
 
