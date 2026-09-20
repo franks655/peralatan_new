@@ -1,0 +1,55 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+backend/.env
+supabase/.env
+
+# Build folders
+dist-new
+dist-lovable
+dist-lovable2
+frontend.zip
+front*.zip
+front*.rar
+backend.zip
+backend/backend.zip
+backend/server.zip
+backend/server2.zip
+backend/emailService.zip
+
+# Upload folders
+backend/uploads
+uploads
+
+# Temporary files
+*.tmp
+*.temp
+
+# Migration scripts with secrets
+migrate-data.ts
