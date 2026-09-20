@@ -122,6 +122,7 @@ const DataAlatBerat = () => {
       status: item.status,
       keterangan: item.keterangan,
       foto: item.foto || null,
+      harga_sewa: item.harga_sewa,
       created_at: item.created_at,
       updated_at: item.updated_at,
     }));
