@@ -277,10 +277,20 @@ const NavBar = () => {
       <div className="max-w-7xl mx-auto px-4 lg:px-6">
         <div className="flex justify-between items-center h-16 lg:h-20">
           {/* Logo/Brand */}
-          <div className="flex-shrink-0 mr-1 lg:mr-8">
-            <Link to="/dashboard" className="block text-sm font-bold text-blue-700 leading-tight hover:opacity-90 transition-opacity">
-              <div className="text-xs sm:text-sm lg:text-base font-bold">Sistem Informasi Peralatan</div>
-              <div className="text-[10px] sm:text-xs font-medium text-blue-600">PT. REKA UTAMA PERSADA</div>
+          <div className="flex-shrink-0 mr-1 lg:mr-8 flex items-center gap-2 lg:gap-3">
+            <Link to="/dashboard" className="flex items-center gap-2 lg:gap-3 hover:opacity-90 transition-opacity">
+              <img
+                src="/images/logo.png"
+                alt="PT. REKA UTAMA PERSADA Logo"
+                className="h-10 lg:h-12 w-auto object-contain"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+              <div className="text-sm font-bold text-blue-700 leading-tight">
+                <div className="text-xs sm:text-sm lg:text-base font-bold">Sistem Informasi Peralatan</div>
+                <div className="text-[10px] sm:text-xs font-medium text-blue-600">PT. REKA UTAMA PERSADA</div>
+              </div>
             </Link>
           </div>
 
