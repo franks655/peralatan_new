@@ -509,6 +509,7 @@ app.post('/api/invoice/upload', (req, res) => {
 
 // Serve static files for invoice uploads
 app.use('/uploads/invoice', express.static(invoiceUploadsDir));
+
 // GET invoice with items
 app.get('/api/invoice', async (req, res) => {
   try {
@@ -519,18 +520,17 @@ app.get('/api/invoice', async (req, res) => {
     const [rows] = await db.query(sql, values);
 
     // Fetch items for each invoice
-    const invoicesWithItems = await Promise.all(
-      rows.map(async (invoice: any) => {
-        const [items] = await db.query(
-          'SELECT * FROM `invoice_items` WHERE `invoice_id` = ?',
-          [invoice.id]
-        );
-        return {
-          ...processRow(invoice),
-          items: items.map(processRow)
-        };
-      })
-    );
+    const invoicesWithItems = [];
+    for (const invoice of rows) {
+      const [items] = await db.query(
+        'SELECT * FROM `invoice_items` WHERE `invoice_id` = ?',
+        [invoice.id]
+      );
+      invoicesWithItems.push({
+        ...processRow(invoice),
+        items: items.map(processRow)
+      });
+    }
 
     if (maybeSingle || single) {
       if (invoicesWithItems.length === 0) {
