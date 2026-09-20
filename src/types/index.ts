@@ -150,8 +150,7 @@ export interface Invoice {
   nama_perusahaan: string;
   pekerjaan?: string;
   lokasi_proyek_id?: string;
-  lokasi_proyek?: string;
-  lokasi_pekerjaan?: string;
+  lokasi?: string;
   periode_bulan: number;
   periode_tahun: number;
   lampiran?: string;

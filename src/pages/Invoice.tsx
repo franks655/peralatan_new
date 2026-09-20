@@ -41,7 +41,7 @@ const Invoice = () => {
     nama_perusahaan: '',
     pekerjaan: '',
     lokasi_proyek_id: '',
-    lokasi_pekerjaan: '',
+    lokasi: '',
     periode_bulan: new Date().getMonth() + 1,
     periode_tahun: new Date().getFullYear(),
     lampiran: '',
@@ -68,7 +68,7 @@ const Invoice = () => {
       nama_perusahaan: '',
       pekerjaan: '',
       lokasi_proyek_id: '',
-      lokasi_pekerjaan: '',
+      lokasi: '',
       periode_bulan: new Date().getMonth() + 1,
       periode_tahun: new Date().getFullYear(),
       lampiran: '',
@@ -288,8 +288,7 @@ const Invoice = () => {
 
     console.log('Invoice data for print:', {
       lokasi_proyek_id: invoice.lokasi_proyek_id,
-      lokasi_proyek: invoice.lokasi_proyek,
-      lokasi_pekerjaan: invoice.lokasi_pekerjaan,
+      lokasi: invoice.lokasi,
       lokasiProyekFromDB: lokasiProyek
     });
 
@@ -371,7 +370,7 @@ const Invoice = () => {
             <div class="info-row"><span class="info-label">Nama Penyewa:</span><span class="info-val">${invoice.nama_penyewa}</span></div>
             <div class="info-row"><span class="info-label">Nama Perusahaan:</span><span class="info-val">${invoice.nama_perusahaan}</span></div>
             <div class="info-row"><span class="info-label">Pekerjaan:</span><span class="info-val">${invoice.pekerjaan || '-'}</span></div>
-            <div class="info-row"><span class="info-label">Lokasi Pekerjaan:</span><span class="info-val">${invoice.lokasi_proyek || invoice.lokasi_pekerjaan || lokasiProyek?.lokasi || '-'}</span></div>
+            <div class="info-row"><span class="info-label">Lokasi Pekerjaan:</span><span class="info-val">${invoice.lokasi || lokasiProyek?.lokasi || '-'}</span></div>
             <div class="info-row"><span class="info-label">Lampiran:</span><span class="info-val">${invoice.lampiran ? invoice.lampiran.split(',').map(path => `<a href="${import.meta.env.VITE_API_URL}${path}" target="_blank" style="color: #0066cc;">${path.split('/').pop()}</a>`).join(', ') : '-'}</span></div>
             <div class="info-row"><span class="info-label">Keterangan:</span><span class="info-val">${invoice.keterangan || '-'}</span></div>
           </div>
@@ -503,18 +502,27 @@ const Invoice = () => {
                 <Label htmlFor="lokasi_proyek">Lokasi Proyek</Label>
                 <ComboboxLokasiProyek
                   value={formData.lokasi_proyek_id || ''}
-                  onChange={(value) => setFormData({ ...formData, lokasi_proyek_id: value })}
+                  onChange={(value) => {
+                    setFormData({ ...formData, lokasi_proyek_id: value });
+                    // Auto-fill lokasi when lokasi_proyek is selected
+                    const selectedLokasi = lokasiProyekData.find((lp) => lp.id === value);
+                    if (selectedLokasi) {
+                      setFormData({ ...formData, lokasi_proyek_id: value, lokasi: selectedLokasi.lokasi });
+                    }
+                  }}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="lokasi_pekerjaan">Lokasi Pekerjaan (Manual)</Label>
-                <Input
-                  id="lokasi_pekerjaan"
-                  value={formData.lokasi_pekerjaan || ''}
-                  onChange={(e) => setFormData({ ...formData, lokasi_pekerjaan: e.target.value })}
-                  placeholder="Lokasi pekerjaan manual (opsional)"
-                />
-              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="lokasi">Lokasi Pekerjaan</Label>
+              <Input
+                id="lokasi"
+                value={formData.lokasi || ''}
+                onChange={(e) => setFormData({ ...formData, lokasi: e.target.value })}
+                placeholder="Lokasi pekerjaan (otomatis dari Lokasi Proyek atau input manual)"
+              />
+            </div>
               <div className="space-y-2">
                 <Label htmlFor="lampiran">Lampiran (Upload File)</Label>
                 <div className="space-y-2">
