@@ -159,20 +159,30 @@ export const getTotalJamFromTimesheet = async (
   const startDate = new Date(tahun, bulan - 1, 1);
   const endDate = new Date(tahun, bulan, 0);
 
+  const startDateStr = startDate.toISOString().split('T')[0];
+  const endDateStr = endDate.toISOString().split('T')[0];
+
   console.log('Fetching timesheet for:', {
     noLambung,
-    startDate: startDate.toISOString().split('T')[0],
-    endDate: endDate.toISOString().split('T')[0]
+    startDate: startDateStr,
+    endDate: endDateStr
   });
 
   try {
-    // Use backend API to fetch timesheet data with proper date range filter
-    const response = await fetch(
-      `${API_URL}/api/timesheet?eq=${encodeURIComponent(JSON.stringify({ no_lambung }))}&gte=${encodeURIComponent(JSON.stringify({ tanggal: startDate.toISOString().split('T')[0] }))}&lte=${encodeURIComponent(JSON.stringify({ tanggal: endDate.toISOString().split('T')[0] }))}`
-    );
-    
+    // Build query parameters separately to ensure proper encoding
+    const eqParams = JSON.stringify({ no_lambung });
+    const gteParams = JSON.stringify({ tanggal: startDateStr });
+    const lteParams = JSON.stringify({ tanggal: endDateStr });
+
+    const url = `${API_URL}/api/timesheet?eq=${encodeURIComponent(eqParams)}&gte=${encodeURIComponent(gteParams)}&lte=${encodeURIComponent(lteParams)}`;
+    console.log('Request URL:', url);
+
+    const response = await fetch(url);
     const result = await response.json();
-    
+
+    console.log('Response status:', response.status);
+    console.log('Response data:', result);
+
     if (!response.ok) {
       console.error('Error fetching timesheet:', result.error);
       return 0;
