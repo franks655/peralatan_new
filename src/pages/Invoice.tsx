@@ -622,12 +622,12 @@ const Invoice = () => {
 
             {/* Form Actions */}
             <div className="flex gap-2">
-              <Button type="submit">
-                <Save className="h-4 w-4 mr-2" />
+              <Button type="submit" className="px-8 py-6 text-base">
+                <Save className="h-5 w-5 mr-2" />
                 {isEditing ? 'Update Invoice' : 'Simpan Invoice'}
               </Button>
               {isEditing && (
-                <Button type="button" variant="outline" onClick={resetForm}>
+                <Button type="button" variant="outline" onClick={resetForm} className="px-8 py-6 text-base">
                   Batal
                 </Button>
               )}
