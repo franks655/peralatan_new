@@ -3,6 +3,9 @@ import { supabase } from '@/integrations/api/client';
 import { toast } from 'sonner';
 import type { Invoice } from '@/types';
 
+// API base URL
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 // Helper function to generate UUID
 const generateUUID = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -16,37 +19,14 @@ export const useInvoice = () => {
   return useQuery<Invoice[], Error>({
     queryKey: ['invoice'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('invoice')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
+      const response = await fetch(`${API_URL}/api/invoice?order=created_at&ascending=false`);
+      const result = await response.json();
       
-      // Fetch items for each invoice
-      const invoicesWithItems = await Promise.all(
-        (data || []).map(async (invoice: any) => {
-          const { data: items, error: itemsError } = await supabase
-            .from('invoice_items')
-            .select('*')
-            .eq('invoice_id', invoice.id);
+      if (!response.ok) {
+        throw new Error(result.error?.message || 'Failed to fetch invoices');
+      }
 
-          if (itemsError) {
-            console.error('Error fetching invoice items:', itemsError);
-            return {
-              ...invoice,
-              items: []
-            } as Invoice;
-          }
-
-          return {
-            ...invoice,
-            items: items || []
-          } as Invoice;
-        })
-      );
-
-      return invoicesWithItems;
+      return result.data || [];
     },
   });
 };
@@ -58,56 +38,26 @@ export const useAddInvoice = () => {
     mutationFn: async (data) => {
       const invoiceId = generateUUID();
       
-      // Insert invoice header
-      const { data: invoiceData, error: invoiceError } = await supabase
-        .from('invoice')
-        .insert({
-          id: invoiceId,
-          no_invoice: data.no_invoice,
-          tanggal: data.tanggal,
-          nama_penyewa: data.nama_penyewa,
-          nama_perusahaan: data.nama_perusahaan,
-          lokasi_proyek_id: data.lokasi_proyek_id || null,
-          periode_bulan: data.periode_bulan,
-          periode_tahun: data.periode_tahun,
-          lampiran: data.lampiran || null,
-          keterangan: data.keterangan || null,
-          total_invoice: data.total_invoice,
-          status: data.status || 'draft',
-        })
-        .select()
-        .single();
+      const payload = {
+        ...data,
+        id: invoiceId,
+      };
 
-      if (invoiceError) throw invoiceError;
+      const response = await fetch(`${API_URL}/api/invoice?single=true`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
 
-      // Insert invoice items
-      if (data.items && data.items.length > 0) {
-        const itemsToInsert = data.items.map((item) => ({
-          id: generateUUID(),
-          invoice_id: invoiceId,
-          alat_berat_id: item.alat_berat_id,
-          no_lambung: item.no_lambung,
-          nama_alat: item.nama_alat,
-          qty: item.qty,
-          satuan: item.satuan,
-          harga_sewa: item.harga_sewa,
-          lama_sewa_jam: item.lama_sewa_jam,
-          satuan_lama_sewa: item.satuan_lama_sewa,
-          keterangan: item.keterangan || null,
-          total_item: item.total_item,
-        }));
-
-        const { error: itemsError } = await supabase
-          .from('invoice_items')
-          .insert(itemsToInsert);
-
-        if (itemsError) throw itemsError;
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error?.message || 'Failed to create invoice');
       }
 
-      return {
-        ...invoiceData,
-        items: data.items || []
-      } as Invoice;
+      return result.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoice'] });
@@ -126,57 +76,21 @@ export const useUpdateInvoice = () => {
     mutationFn: async (data) => {
       if (!data.id) throw new Error('Invoice ID is required');
 
-      // Update invoice header
-      const { error: invoiceError } = await supabase
-        .from('invoice')
-        .update({
-          no_invoice: data.no_invoice,
-          tanggal: data.tanggal,
-          nama_penyewa: data.nama_penyewa,
-          nama_perusahaan: data.nama_perusahaan,
-          lokasi_proyek_id: data.lokasi_proyek_id || null,
-          periode_bulan: data.periode_bulan,
-          periode_tahun: data.periode_tahun,
-          lampiran: data.lampiran || null,
-          keterangan: data.keterangan || null,
-          total_invoice: data.total_invoice,
-          status: data.status,
-        })
-        .eq('id', data.id);
+      const response = await fetch(`${API_URL}/api/invoice?eq=${JSON.stringify({ id: data.id })}&single=true`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
 
-      if (invoiceError) throw invoiceError;
-
-      // Delete existing items
-      await supabase
-        .from('invoice_items')
-        .delete()
-        .eq('invoice_id', data.id);
-
-      // Insert new items
-      if (data.items && data.items.length > 0) {
-        const itemsToInsert = data.items.map((item) => ({
-          id: generateUUID(),
-          invoice_id: data.id,
-          alat_berat_id: item.alat_berat_id,
-          no_lambung: item.no_lambung,
-          nama_alat: item.nama_alat,
-          qty: item.qty,
-          satuan: item.satuan,
-          harga_sewa: item.harga_sewa,
-          lama_sewa_jam: item.lama_sewa_jam,
-          satuan_lama_sewa: item.satuan_lama_sewa,
-          keterangan: item.keterangan || null,
-          total_item: item.total_item,
-        }));
-
-        const { error: itemsError } = await supabase
-          .from('invoice_items')
-          .insert(itemsToInsert);
-
-        if (itemsError) throw itemsError;
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error?.message || 'Failed to update invoice');
       }
 
-      return data;
+      return result.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoice'] });
@@ -193,12 +107,15 @@ export const useDeleteInvoice = () => {
 
   return useMutation<void, Error, string>({
     mutationFn: async (id) => {
-      const { error } = await supabase
-        .from('invoice')
-        .delete()
-        .eq('id', id);
+      const response = await fetch(`${API_URL}/api/invoice?eq=${JSON.stringify({ id })}`, {
+        method: 'DELETE',
+      });
 
-      if (error) throw error;
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error?.message || 'Failed to delete invoice');
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoice'] });
@@ -219,18 +136,39 @@ export const getTotalJamFromTimesheet = async (
   const startDate = new Date(tahun, bulan - 1, 1);
   const endDate = new Date(tahun, bulan, 0);
 
-  const { data, error } = await supabase
-    .from('timesheet')
-    .select('total_jam')
-    .eq('no_lambung', noLambung)
-    .gte('tanggal', startDate.toISOString().split('T')[0])
-    .lte('tanggal', endDate.toISOString().split('T')[0]);
+  console.log('Fetching timesheet for:', {
+    noLambung,
+    startDate: startDate.toISOString().split('T')[0],
+    endDate: endDate.toISOString().split('T')[0]
+  });
 
-  if (error) {
+  try {
+    // Use backend API to fetch timesheet data
+    const response = await fetch(
+      `${API_URL}/api/timesheet?eq=${JSON.stringify({ no_lambung })}&gte=${JSON.stringify({ tanggal: startDate.toISOString().split('T')[0] })}&lte=${JSON.stringify({ tanggal: endDate.toISOString().split('T')[0] })}`
+    );
+    
+    const result = await response.json();
+    
+    if (!response.ok) {
+      console.error('Error fetching timesheet:', result.error);
+      return 0;
+    }
+
+    const timesheetData = result.data || [];
+    console.log('Timesheet data found:', timesheetData.length, 'records');
+    console.log('Timesheet records:', timesheetData);
+
+    const totalJam = timesheetData.reduce((sum: number, item: any) => {
+      const jam = Number(item.total_jam) || 0;
+      console.log(`Record: ${item.tanggal}, total_jam: ${jam}`);
+      return sum + jam;
+    }, 0);
+
+    console.log('Total jam calculated:', totalJam);
+    return totalJam;
+  } catch (error) {
     console.error('Error fetching timesheet:', error);
     return 0;
   }
-
-  const totalJam = data?.reduce((sum: number, item: any) => sum + (Number(item.total_jam) || 0), 0) || 0;
-  return totalJam;
 };

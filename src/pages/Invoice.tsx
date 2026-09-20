@@ -55,6 +55,8 @@ const Invoice = () => {
     satuan_lama_sewa: 'Jam',
   });
 
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+
   const resetForm = () => {
     setFormData({
       no_invoice: '',
@@ -78,6 +80,7 @@ const Invoice = () => {
       satuan: 'Unit',
       satuan_lama_sewa: 'Jam',
     });
+    setUploadedFiles([]);
   };
 
   const handleEdit = (invoice: Invoice) => {
@@ -112,12 +115,21 @@ const Invoice = () => {
       return;
     }
 
+    console.log('Adding item for alat:', {
+      no_lambung: alat.no_lambung,
+      nama_alat: alat.nama_alat,
+      periode_bulan: formData.periode_bulan,
+      periode_tahun: formData.periode_tahun
+    });
+
     // Get total jam from timesheet
     const totalJam = await getTotalJamFromTimesheet(
       alat.no_lambung,
       formData.periode_bulan,
       formData.periode_tahun
     );
+
+    console.log('Total jam from timesheet:', totalJam);
 
     const newItem: InvoiceItem = {
       alat_berat_id: alat.id,
@@ -147,6 +159,12 @@ const Invoice = () => {
       satuan: 'Unit',
       satuan_lama_sewa: 'Jam',
     });
+    setUploadedFiles([]);
+
+    toast({
+      title: 'Alat ditambahkan',
+      description: `${alat.nama_alat} ditambahkan dengan lama sewa ${totalJam} jam`,
+    });
   };
 
   const handleRemoveItem = (index: number) => {
@@ -173,14 +191,60 @@ const Invoice = () => {
     }
 
     try {
+      // Upload files first if any
+      let lampiranPaths = formData.lampiran || '';
+      if (uploadedFiles.length > 0) {
+        const filePromises = uploadedFiles.map(async (file) => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = async () => {
+              try {
+                const base64 = reader.result as string;
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/invoice/upload`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    files: [{
+                      name: file.name,
+                      data: base64,
+                      type: file.type
+                    }]
+                  })
+                });
+                const result = await response.json();
+                if (result.error) throw new Error(result.error.message);
+                resolve(result.data.files[0].filePath);
+              } catch (err) {
+                reject(err);
+              }
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        });
+
+        const filePaths = await Promise.all(filePromises);
+        lampiranPaths = filePaths.join(', ');
+      }
+
+      const invoiceData = {
+        ...formData,
+        lampiran: lampiranPaths,
+      };
+
       if (isEditing && currentInvoice?.id) {
-        await updateInvoice({ ...formData, id: currentInvoice.id });
+        await updateInvoice({ ...invoiceData, id: currentInvoice.id });
       } else {
-        await addInvoice(formData);
+        await addInvoice(invoiceData);
       }
       resetForm();
     } catch (error) {
       console.error('Error saving invoice:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Gagal menyimpan invoice',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -251,7 +315,7 @@ const Invoice = () => {
             </div>
             <div class="info-section">
               <div class="info-label">Lampiran</div>
-              <div class="info-value">${invoice.lampiran || '-'}</div>
+              <div class="info-value">${invoice.lampiran ? invoice.lampiran.split(',').map(path => `<a href="${import.meta.env.VITE_API_URL}${path}" target="_blank" style="color: blue;">${path.split('/').pop()}</a>`).join(', ') : '-'}</div>
             </div>
             <div class="info-section">
               <div class="info-label">Periode</div>
@@ -368,17 +432,23 @@ const Invoice = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lampiran">Lampiran</Label>
-                <div className="flex gap-2">
+                <Label htmlFor="lampiran">Lampiran (Upload File)</Label>
+                <div className="space-y-2">
                   <Input
-                    id="lampiran"
-                    value={formData.lampiran}
-                    onChange={(e) => setFormData({ ...formData, lampiran: e.target.value })}
-                    placeholder="Timesheet, Ban Pemakaian, Bukti Transaksi"
+                    id="lampiran_files"
+                    type="file"
+                    multiple
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      setUploadedFiles(files);
+                    }}
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                   />
-                  <Button type="button" variant="outline" size="icon">
-                    <Upload className="h-4 w-4" />
-                  </Button>
+                  {uploadedFiles.length > 0 && (
+                    <div className="text-sm text-muted-foreground">
+                      {uploadedFiles.length} file(s) dipilih: {uploadedFiles.map(f => f.name).join(', ')}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

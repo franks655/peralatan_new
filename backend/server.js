@@ -264,6 +264,7 @@ const TABLES = [
   'perbaikan_alat',
   'perbaikan_alat_pemeriksaan',
   'perbaikan_alat_items',
+  'invoice', 'invoice_items',
 ];
 
 for (const table of TABLES) {
@@ -450,6 +451,281 @@ for (const table of TABLES) {
     }
   });
 }
+
+// ── Custom Invoice Routes with Items ───────────────────────
+
+// File upload directory for invoice attachments
+const invoiceUploadsDir = path.join(__dirname, 'uploads', 'invoice');
+if (!fs.existsSync(invoiceUploadsDir)) {
+  fs.mkdirSync(invoiceUploadsDir, { recursive: true });
+}
+
+// Endpoint untuk upload lampiran invoice (multiple files)
+app.post('/api/invoice/upload', (req, res) => {
+  try {
+    const { files } = req.body;
+    
+    if (!files || !Array.isArray(files) || files.length === 0) {
+      return res.status(400).json({ data: null, error: { message: 'No files provided' } });
+    }
+
+    const uploadedFiles = [];
+    
+    for (const file of files) {
+      try {
+        const base64Data = file.data.replace(/^data:.*?;base64,/, '');
+        const buffer = Buffer.from(base64Data, 'base64');
+        
+        const cleanName = file.name.replace(/[^a-zA-Z0-9_.-]/g, '_');
+        const savedName = `${Date.now()}_${cleanName}`;
+        const targetPath = path.join(invoiceUploadsDir, savedName);
+        
+        fs.writeFileSync(targetPath, buffer);
+        
+        uploadedFiles.push({
+          originalName: file.name,
+          savedName: savedName,
+          filePath: `/uploads/invoice/${savedName}`,
+          fileSize: buffer.length,
+          mimeType: file.type
+        });
+      } catch (err) {
+        console.error('Error uploading file:', err);
+      }
+    }
+
+    res.json({
+      data: {
+        files: uploadedFiles,
+        count: uploadedFiles.length
+      },
+      error: null
+    });
+  } catch (err) {
+    console.error('POST /api/invoice/upload error:', err);
+    res.status(500).json({ data: null, error: { message: err.message } });
+  }
+});
+
+// Serve static files for invoice uploads
+app.use('/uploads/invoice', express.static(invoiceUploadsDir));
+// GET invoice with items
+app.get('/api/invoice', async (req, res) => {
+  try {
+    console.log('\n[GET /invoice] raw query:', JSON.stringify(req.query));
+    const built = buildSelect('invoice', req.query);
+    console.log('[GET /invoice] SQL:', built.sql, '| values:', built.values);
+    const { sql, values, maybeSingle, single } = built;
+    const [rows] = await db.query(sql, values);
+
+    // Fetch items for each invoice
+    const invoicesWithItems = await Promise.all(
+      rows.map(async (invoice: any) => {
+        const [items] = await db.query(
+          'SELECT * FROM `invoice_items` WHERE `invoice_id` = ?',
+          [invoice.id]
+        );
+        return {
+          ...processRow(invoice),
+          items: items.map(processRow)
+        };
+      })
+    );
+
+    if (maybeSingle || single) {
+      if (invoicesWithItems.length === 0) {
+        if (single) return res.status(406).json({ data: null, error: { message: 'No rows found', code: 'PGRST116' } });
+        return res.json({ data: null, error: null });
+      }
+      return res.json({ data: invoicesWithItems[0], error: null });
+    }
+    res.json({ data: invoicesWithItems, error: null });
+  } catch (err) {
+    console.error('GET /invoice error:', err.message);
+    res.status(500).json({ data: null, error: { message: err.message, code: err.code } });
+  }
+});
+
+// POST invoice with items
+app.post('/api/invoice', async (req, res) => {
+  try {
+    const body = req.body;
+    const single = req.query.single === 'true' || req.query.select;
+    
+    // Generate ID if not provided
+    if (!body.id) {
+      const { v4: uuidv4 } = require('uuid');
+      body.id = uuidv4();
+    }
+
+    // Insert invoice header
+    const invoiceCols = Object.keys(body)
+      .filter(key => key !== 'items')
+      .map(c => `\`${c}\``)
+      .join(', ');
+    const invoicePlaceholders = Object.keys(body)
+      .filter(key => key !== 'items')
+      .map(() => '?')
+      .join(', ');
+    const invoiceVals = Object.keys(body)
+      .filter(key => key !== 'items')
+      .map(key => body[key]);
+
+    const [insertResult] = await db.query(
+      `INSERT INTO \`invoice\` (${invoiceCols}) VALUES (${invoicePlaceholders})`,
+      invoiceVals
+    );
+
+    // Insert invoice items if provided
+    let insertedItems = [];
+    if (body.items && Array.isArray(body.items) && body.items.length > 0) {
+      const { v4: uuidv4 } = require('uuid');
+      
+      for (const item of body.items) {
+        const itemId = uuidv4();
+        const itemCols = Object.keys(item).map(c => `\`${c}\``).join(', ');
+        const itemPlaceholders = Object.keys(item).map(() => '?').join(', ');
+        const itemVals = [...Object.values(item), itemId, body.id];
+        
+        // Add id and invoice_id to columns
+        const fullItemCols = `${itemCols}, \`id\`, \`invoice_id\``;
+        const fullItemPlaceholders = `${itemPlaceholders}, ?, ?`;
+        
+        await db.query(
+          `INSERT INTO \`invoice_items\` (${fullItemCols}) VALUES (${fullItemPlaceholders})`,
+          itemVals
+        );
+        
+        insertedItems.push({ ...item, id: itemId, invoice_id: body.id });
+      }
+    }
+
+    // Fetch inserted invoice with items
+    const [insertedInvoice] = await db.query(
+      'SELECT * FROM `invoice` WHERE `id` = ?',
+      [body.id]
+    );
+
+    const [fetchedItems] = await db.query(
+      'SELECT * FROM `invoice_items` WHERE `invoice_id` = ?',
+      [body.id]
+    );
+
+    const result = {
+      ...processRow(insertedInvoice[0]),
+      items: fetchedItems.map(processRow)
+    };
+
+    if (single) {
+      res.json({ data: result, error: null });
+    } else {
+      res.json({ data: [result], error: null });
+    }
+  } catch (err) {
+    console.error('POST /invoice error:', err.message);
+    res.status(500).json({ data: null, error: { message: err.message, code: err.code } });
+  }
+});
+
+// PATCH invoice with items
+app.patch('/api/invoice', async (req, res) => {
+  try {
+    const { eq, select, single } = req.query;
+    const body = { ...req.body };
+
+    if (!eq) return res.status(400).json({ data: null, error: { message: 'eq parameter required' } });
+
+    const eqParsed = JSON.parse(eq);
+    
+    // Remove items from body for invoice update
+    const { items, ...invoiceData } = body;
+    
+    // Update invoice header
+    const setCols = Object.keys(invoiceData).map(c => `\`${c}\` = ?`).join(', ');
+    const setVals = Object.values(invoiceData);
+    const whereCols = Object.keys(eqParsed).map(c => `\`${c}\` = ?`).join(' AND ');
+    const whereVals = Object.values(eqParsed);
+
+    await db.query(
+      `UPDATE \`invoice\` SET ${setCols} WHERE ${whereCols}`,
+      [...setVals, ...whereVals]
+    );
+
+    // Delete existing items
+    await db.query(
+      `DELETE FROM \`invoice_items\` WHERE ${whereCols}`,
+      whereVals
+    );
+
+    // Insert new items if provided
+    if (items && Array.isArray(items) && items.length > 0) {
+      const { v4: uuidv4 } = require('uuid');
+      
+      for (const item of items) {
+        const itemId = uuidv4();
+        const itemCols = Object.keys(item).map(c => `\`${c}\``).join(', ');
+        const itemPlaceholders = Object.keys(item).map(() => '?').join(', ');
+        const itemVals = [...Object.values(item), itemId, eqParsed.id];
+        
+        const fullItemCols = `${itemCols}, \`id\`, \`invoice_id\``;
+        const fullItemPlaceholders = `${itemPlaceholders}, ?, ?`;
+        
+        await db.query(
+          `INSERT INTO \`invoice_items\` (${fullItemCols}) VALUES (${fullItemPlaceholders})`,
+          itemVals
+        );
+      }
+    }
+
+    // Fetch updated invoice with items
+    const [updatedInvoice] = await db.query(
+      `SELECT * FROM \`invoice\` WHERE ${whereCols}`,
+      whereVals
+    );
+
+    const [fetchedItems] = await db.query(
+      'SELECT * FROM `invoice_items` WHERE `invoice_id` = ?',
+      [eqParsed.id]
+    );
+
+    const result = {
+      ...processRow(updatedInvoice[0]),
+      items: fetchedItems.map(processRow)
+    };
+
+    if (select || single === 'true') {
+      res.json({ data: result, error: null });
+    } else {
+      res.json({ data: null, error: null });
+    }
+  } catch (err) {
+    console.error('PATCH /invoice error:', err.message);
+    res.status(500).json({ data: null, error: { message: err.message, code: err.code } });
+  }
+});
+
+// DELETE invoice with items (cascade handled by database)
+app.delete('/api/invoice', async (req, res) => {
+  try {
+    const { eq, select, single } = req.query;
+    if (!eq) return res.status(400).json({ data: null, error: { message: 'eq parameter required' } });
+
+    const eqParsed = JSON.parse(eq);
+    const whereCols = Object.keys(eqParsed).map(c => `\`${c}\` = ?`).join(' AND ');
+    const whereVals = Object.values(eqParsed);
+
+    // Delete items first (manual cascade)
+    await db.query(`DELETE FROM \`invoice_items\` WHERE ${whereCols}`, whereVals);
+    
+    // Delete invoice
+    await db.query(`DELETE FROM \`invoice\` WHERE ${whereCols}`, whereVals);
+
+    res.json({ data: null, error: null });
+  } catch (err) {
+    console.error('DELETE /invoice error:', err.message);
+    res.status(500).json({ data: null, error: { message: err.message, code: err.code } });
+  }
+});
 
 // ── System: Get user stats (total & online count) ────────
 app.get('/api/system/user-stats', async (req, res) => {
