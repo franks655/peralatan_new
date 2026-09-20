@@ -12,6 +12,24 @@ interface UseAlatBeratReturn {
   error: Error | null;
 }
 
+// Helper function to convert camelCase to snake_case for database
+const camelToSnake = (obj: any): any => {
+  if (obj === null || typeof obj !== 'object') return obj;
+  
+  if (Array.isArray(obj)) {
+    return obj.map(camelToSnake);
+  }
+  
+  const result: any = {};
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+      result[snakeKey] = camelToSnake(obj[key]);
+    }
+  }
+  return result;
+};
+
 // Mock data for testing without backend
 const MOCK_ALAT_BERAT: AlatBerat[] = [
   {
@@ -111,10 +129,12 @@ export const useAddAlatBerat = () => {
 
   return useMutation<AlatBerat, Error, Omit<AlatBerat, 'id' | 'created_at' | 'updated_at'>>({
     mutationFn: async (data) => {
+      // Convert camelCase to snake_case for database
+      const dbData = camelToSnake(data);
       const response = await fetch(`${API_URL}/api/alat_berat?single=true`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(dbData),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error?.message || 'Failed to add alat berat');
@@ -137,10 +157,12 @@ export const useUpdateAlatBerat = () => {
   return useMutation<AlatBerat, Error, AlatBerat>({
     mutationFn: async (data) => {
       if (!data.id) throw new Error('ID is required');
+      // Convert camelCase to snake_case for database
+      const dbData = camelToSnake(data);
       const response = await fetch(`${API_URL}/api/alat_berat?eq=${JSON.stringify({ id: data.id })}&single=true`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(dbData),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error?.message || 'Failed to update alat berat');
