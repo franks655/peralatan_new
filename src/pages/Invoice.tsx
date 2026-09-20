@@ -64,6 +64,7 @@ const Invoice = () => {
       tanggal: new Date().toISOString().split('T')[0],
       nama_penyewa: '',
       nama_perusahaan: '',
+      pekerjaan: '',
       lokasi_proyek_id: '',
       periode_bulan: new Date().getMonth() + 1,
       periode_tahun: new Date().getFullYear(),
@@ -207,12 +208,14 @@ const Invoice = () => {
       // Upload files first if any
       let lampiranPaths = formData.lampiran || '';
       if (uploadedFiles.length > 0) {
+        console.log('Uploading files:', uploadedFiles.map(f => f.name));
         const filePromises = uploadedFiles.map(async (file) => {
           return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = async () => {
               try {
                 const base64 = reader.result as string;
+                console.log('Uploading file:', file.name, 'Size:', base64.length);
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/api/invoice/upload`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
@@ -225,9 +228,11 @@ const Invoice = () => {
                   })
                 });
                 const result = await response.json();
+                console.log('Upload response:', result);
                 if (result.error) throw new Error(result.error.message);
                 resolve(result.data.files[0].filePath);
               } catch (err) {
+                console.error('Upload error for file:', file.name, err);
                 reject(err);
               }
             };
@@ -238,6 +243,7 @@ const Invoice = () => {
 
         const filePaths = await Promise.all(filePromises);
         lampiranPaths = filePaths.join(', ');
+        console.log('All files uploaded. Paths:', lampiranPaths);
       }
 
       const invoiceData = {
@@ -355,7 +361,7 @@ const Invoice = () => {
             <div class="info-row"><span class="info-label">Periode:</span><span class="info-val">${periodeText}</span></div>
             <div class="info-row"><span class="info-label">Nama Penyewa:</span><span class="info-val">${invoice.nama_penyewa}</span></div>
             <div class="info-row"><span class="info-label">Nama Perusahaan:</span><span class="info-val">${invoice.nama_perusahaan}</span></div>
-            <div class="info-row"><span class="info-label">Pekerjaan:</span><span class="info-val">${lokasiProyek?.namaProyek || '-'}</span></div>
+            <div class="info-row"><span class="info-label">Pekerjaan:</span><span class="info-val">${invoice.pekerjaan || lokasiProyek?.namaProyek || '-'}</span></div>
             <div class="info-row"><span class="info-label">Lokasi Pekerjaan:</span><span class="info-val">${lokasiProyek?.lokasi || '-'}</span></div>
             <div class="info-row"><span class="info-label">Lampiran:</span><span class="info-val">${invoice.lampiran ? invoice.lampiran.split(',').map(path => `<a href="${import.meta.env.VITE_API_URL}${path}" target="_blank" style="color: #0066cc;">${path.split('/').pop()}</a>`).join(', ') : '-'}</span></div>
             <div class="info-row"><span class="info-label">Keterangan:</span><span class="info-val">${invoice.keterangan || '-'}</span></div>
@@ -475,6 +481,15 @@ const Invoice = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="pekerjaan">Pekerjaan</Label>
+                <Input
+                  id="pekerjaan"
+                  value={formData.pekerjaan || ''}
+                  onChange={(e) => setFormData({ ...formData, pekerjaan: e.target.value })}
+                  placeholder="Nama pekerjaan/proyek"
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="lokasi_proyek">Lokasi Proyek</Label>
                 <ComboboxLokasiProyek
