@@ -11,7 +11,10 @@ export interface PerbaikanAlatPemeriksaanItem {
   quantity: number;
   harga: number;
   total_harga?: number;
-  status: 'pending' | 'approved';
+  status: 'pending' | 'approved' | 'rejected';
+  approved_by?: string;
+  approved_at?: string;
+  rejection_reason?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -138,6 +141,56 @@ export const useDeletePerbaikanAlatPemeriksaan = () => {
     },
     onError: (err: Error) => {
       toast({ title: 'Error', description: err.message || 'Gagal menghapus item pemeriksaan', variant: 'destructive' });
+    },
+  });
+};
+
+export const useApprovePerbaikanAlatPemeriksaan = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, approved_by, rejection_reason }: { id: string; approved_by: string; rejection_reason?: string }) => {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/perbaikan_alat_pemeriksaan/${id}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ approved_by, rejection_reason }),
+      });
+      const result = await response.json();
+      if (result.error) throw new Error(result.error.message);
+      return result.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['perbaikan-alat-pemeriksaan'] });
+      toast({ title: 'Berhasil', description: 'Perintah pemeriksaan disetujui' });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Error', description: err.message || 'Gagal menyetujui', variant: 'destructive' });
+    },
+  });
+};
+
+export const useRejectPerbaikanAlatPemeriksaan = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, approved_by, rejection_reason }: { id: string; approved_by: string; rejection_reason: string }) => {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/perbaikan_alat_pemeriksaan/${id}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ approved_by, rejection_reason }),
+      });
+      const result = await response.json();
+      if (result.error) throw new Error(result.error.message);
+      return result.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['perbaikan-alat-pemeriksaan'] });
+      toast({ title: 'Berhasil', description: 'Perintah pemeriksaan ditolak' });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Error', description: err.message || 'Gagal menolak', variant: 'destructive' });
     },
   });
 };

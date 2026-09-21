@@ -792,6 +792,104 @@ app.get('/api/system/user-stats', async (req, res) => {
   }
 });
 
+// ── Approval System: Perintah Pemeriksaan ─────────────────────────
+app.post('/api/perbaikan_alat_pemeriksaan/:id/approve', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { approved_by, rejection_reason } = req.body;
+
+    if (!approved_by) {
+      return res.status(400).json({ data: null, error: { message: 'approved_by required' } });
+    }
+
+    await db.query(
+      'UPDATE `perbaikan_alat_pemeriksaan` SET status = ?, approved_by = ?, approved_at = NOW(), rejection_reason = ? WHERE id = ?',
+      ['approved', approved_by, rejection_reason || null, id]
+    );
+
+    const [updated] = await db.query('SELECT * FROM `perbaikan_alat_pemeriksaan` WHERE id = ?', [id]);
+    res.json({ data: processRow(updated[0]), error: null });
+  } catch (err) {
+    console.error('Approve pemeriksaan error:', err.message);
+    res.status(500).json({ data: null, error: { message: err.message } });
+  }
+});
+
+app.post('/api/perbaikan_alat_pemeriksaan/:id/reject', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { approved_by, rejection_reason } = req.body;
+
+    if (!approved_by) {
+      return res.status(400).json({ data: null, error: { message: 'approved_by required' } });
+    }
+
+    if (!rejection_reason) {
+      return res.status(400).json({ data: null, error: { message: 'rejection_reason required' } });
+    }
+
+    await db.query(
+      'UPDATE `perbaikan_alat_pemeriksaan` SET status = ?, approved_by = ?, approved_at = NOW(), rejection_reason = ? WHERE id = ?',
+      ['rejected', approved_by, rejection_reason, id]
+    );
+
+    const [updated] = await db.query('SELECT * FROM `perbaikan_alat_pemeriksaan` WHERE id = ?', [id]);
+    res.json({ data: processRow(updated[0]), error: null });
+  } catch (err) {
+    console.error('Reject pemeriksaan error:', err.message);
+    res.status(500).json({ data: null, error: { message: err.message } });
+  }
+});
+
+// ── Approval System: Perintah Kerja (SPK) ─────────────────────────
+app.post('/api/perbaikan_alat_items/:id/approve', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { approved_by, rejection_reason } = req.body;
+
+    if (!approved_by) {
+      return res.status(400).json({ data: null, error: { message: 'approved_by required' } });
+    }
+
+    await db.query(
+      'UPDATE `perbaikan_alat_items` SET status = ?, approved_by = ?, approved_at = NOW(), rejection_reason = ? WHERE id = ?',
+      ['approved', approved_by, rejection_reason || null, id]
+    );
+
+    const [updated] = await db.query('SELECT * FROM `perbaikan_alat_items` WHERE id = ?', [id]);
+    res.json({ data: processRow(updated[0]), error: null });
+  } catch (err) {
+    console.error('Approve SPK error:', err.message);
+    res.status(500).json({ data: null, error: { message: err.message } });
+  }
+});
+
+app.post('/api/perbaikan_alat_items/:id/reject', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { approved_by, rejection_reason } = req.body;
+
+    if (!approved_by) {
+      return res.status(400).json({ data: null, error: { message: 'approved_by required' } });
+    }
+
+    if (!rejection_reason) {
+      return res.status(400).json({ data: null, error: { message: 'rejection_reason required' } });
+    }
+
+    await db.query(
+      'UPDATE `perbaikan_alat_items` SET status = ?, approved_by = ?, approved_at = NOW(), rejection_reason = ? WHERE id = ?',
+      ['rejected', approved_by, rejection_reason, id]
+    );
+
+    const [updated] = await db.query('SELECT * FROM `perbaikan_alat_items` WHERE id = ?', [id]);
+    res.json({ data: processRow(updated[0]), error: null });
+  } catch (err) {
+    console.error('Reject SPK error:', err.message);
+    res.status(500).json({ data: null, error: { message: err.message } });
+  }
+});
+
 // ── System: Update last_activity ─────────────────────────
 app.post('/api/system/update-activity', async (req, res) => {
   try {

@@ -10,6 +10,7 @@ export interface Permission {
   create: boolean;
   edit: boolean;
   delete: boolean;
+  approve: boolean;
 }
 
 export interface RolePermissions {
@@ -59,80 +60,80 @@ export const ALL_PERMISSION_TYPES: { key: string; label: string }[] = [
 export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
   admin: {
     // Dashboard
-    dashboard: { view: true, create: true, edit: true, delete: true },
+    dashboard: { view: true, create: true, edit: true, delete: true, approve: true },
 
     // Data Alat Berat
-    dataAlatBerat: { view: true, create: true, edit: true, delete: true },
-    dataAlatPendukung: { view: true, create: true, edit: true, delete: true },
-    sewaAlatEksternal: { view: true, create: true, edit: true, delete: true },
-    rpa: { view: true, create: true, edit: true, delete: true },
-    riwayatPenggunaanAlat: { view: true, create: true, edit: true, delete: true },
+    dataAlatBerat: { view: true, create: true, edit: true, delete: true, approve: true },
+    dataAlatPendukung: { view: true, create: true, edit: true, delete: true, approve: true },
+    sewaAlatEksternal: { view: true, create: true, edit: true, delete: true, approve: true },
+    rpa: { view: true, create: true, edit: true, delete: true, approve: true },
+    riwayatPenggunaanAlat: { view: true, create: true, edit: true, delete: true, approve: true },
 
     // Laporan Perbaikan
-    formPerbaikan: { view: true, create: true, edit: true, delete: true },
-    stockSparepart: { view: true, create: true, edit: true, delete: true },
-    ppa: { view: true, create: true, edit: true, delete: true },
-    kegiatanMekanik: { view: true, create: true, edit: true, delete: true },
+    formPerbaikan: { view: true, create: true, edit: true, delete: true, approve: true },
+    stockSparepart: { view: true, create: true, edit: true, delete: true, approve: true },
+    ppa: { view: true, create: true, edit: true, delete: true, approve: true },
+    kegiatanMekanik: { view: true, create: true, edit: true, delete: true, approve: true },
 
     // Laporan Bulanan
-    stockBBM: { view: true, create: true, edit: true, delete: true },
-    stockOli: { view: true, create: true, edit: true, delete: true },
-    timeSheet: { view: true, create: true, edit: true, delete: true },
-    lokasiProyek: { view: true, create: true, edit: true, delete: true },
+    stockBBM: { view: true, create: true, edit: true, delete: true, approve: true },
+    stockOli: { view: true, create: true, edit: true, delete: true, approve: true },
+    timeSheet: { view: true, create: true, edit: true, delete: true, approve: true },
+    lokasiProyek: { view: true, create: true, edit: true, delete: true, approve: true },
 
     // System (admin only)
-    system: { view: true, create: true, edit: true, delete: true },
-    userManagement: { view: true, create: true, edit: true, delete: true },
+    system: { view: true, create: true, edit: true, delete: true, approve: true },
+    userManagement: { view: true, create: true, edit: true, delete: true, approve: true },
   },
 
   commentator: {
     // Dashboard
-    dashboard: { view: true, create: false, edit: false, delete: false },
+    dashboard: { view: true, create: false, edit: false, delete: false, approve: false },
 
     // Data Alat Berat - Hanya view
-    dataAlatBerat: { view: true, create: false, edit: false, delete: false },
-    dataAlatPendukung: { view: true, create: false, edit: false, delete: false },
-    sewaAlatEksternal: { view: true, create: false, edit: false, delete: false },
-    rpa: { view: true, create: false, edit: false, delete: false },
-    riwayatPenggunaanAlat: { view: true, create: false, edit: false, delete: false },
+    dataAlatBerat: { view: true, create: false, edit: false, delete: false, approve: false },
+    dataAlatPendukung: { view: true, create: false, edit: false, delete: false, approve: false },
+    sewaAlatEksternal: { view: true, create: false, edit: false, delete: false, approve: false },
+    rpa: { view: true, create: false, edit: false, delete: false, approve: false },
+    riwayatPenggunaanAlat: { view: true, create: false, edit: false, delete: false, approve: false },
 
-    // Laporan Perbaikan - Bisa create dan edit
-    formPerbaikan: { view: true, create: true, edit: true, delete: false },
-    stockSparepart: { view: true, create: false, edit: false, delete: false },
-    ppa: { view: true, create: true, edit: true, delete: false },
-    kegiatanMekanik: { view: true, create: true, edit: true, delete: false },
+    // Laporan Perbaikan - Bisa create dan edit, tapi tidak bisa approve
+    formPerbaikan: { view: true, create: true, edit: true, delete: false, approve: false },
+    stockSparepart: { view: true, create: false, edit: false, delete: false, approve: false },
+    ppa: { view: true, create: true, edit: true, delete: false, approve: false },
+    kegiatanMekanik: { view: true, create: true, edit: true, delete: false, approve: false },
 
     // Laporan Bulanan - Hanya view
-    stockBBM: { view: true, create: false, edit: false, delete: false },
-    stockOli: { view: true, create: false, edit: false, delete: false },
-    timeSheet: { view: true, create: false, edit: false, delete: false },
-    lokasiProyek: { view: true, create: false, edit: false, delete: false },
+    stockBBM: { view: true, create: false, edit: false, delete: false, approve: false },
+    stockOli: { view: true, create: false, edit: false, delete: false, approve: false },
+    timeSheet: { view: true, create: false, edit: false, delete: false, approve: false },
+    lokasiProyek: { view: true, create: false, edit: false, delete: false, approve: false },
 
     // System - No access
-    system: { view: false, create: false, edit: false, delete: false },
-    userManagement: { view: false, create: false, edit: false, delete: false },
+    system: { view: false, create: false, edit: false, delete: false, approve: false },
+    userManagement: { view: false, create: false, edit: false, delete: false, approve: false },
   },
 
   viewer: {
     // Viewer bisa MELIHAT semua halaman
-    dashboard: { view: true, create: false, edit: false, delete: false },
-    dataAlatBerat: { view: true, create: false, edit: false, delete: false },
-    dataAlatPendukung: { view: true, create: false, edit: false, delete: false },
-    sewaAlatEksternal: { view: true, create: false, edit: false, delete: false },
-    rpa: { view: true, create: false, edit: false, delete: false },
-    riwayatPenggunaanAlat: { view: true, create: false, edit: false, delete: false },
-    formPerbaikan: { view: true, create: false, edit: false, delete: false },
-    stockSparepart: { view: true, create: false, edit: false, delete: false },
-    ppa: { view: true, create: false, edit: false, delete: false },
-    kegiatanMekanik: { view: true, create: false, edit: false, delete: false },
-    stockBBM: { view: true, create: false, edit: false, delete: false },
-    stockOli: { view: true, create: false, edit: false, delete: false },
-    timeSheet: { view: true, create: false, edit: false, delete: false },
-    lokasiProyek: { view: true, create: false, edit: false, delete: false },
+    dashboard: { view: true, create: false, edit: false, delete: false, approve: false },
+    dataAlatBerat: { view: true, create: false, edit: false, delete: false, approve: false },
+    dataAlatPendukung: { view: true, create: false, edit: false, delete: false, approve: false },
+    sewaAlatEksternal: { view: true, create: false, edit: false, delete: false, approve: false },
+    rpa: { view: true, create: false, edit: false, delete: false, approve: false },
+    riwayatPenggunaanAlat: { view: true, create: false, edit: false, delete: false, approve: false },
+    formPerbaikan: { view: true, create: false, edit: false, delete: false, approve: false },
+    stockSparepart: { view: true, create: false, edit: false, delete: false, approve: false },
+    ppa: { view: true, create: false, edit: false, delete: false, approve: false },
+    kegiatanMekanik: { view: true, create: false, edit: false, delete: false, approve: false },
+    stockBBM: { view: true, create: false, edit: false, delete: false, approve: false },
+    stockOli: { view: true, create: false, edit: false, delete: false, approve: false },
+    timeSheet: { view: true, create: false, edit: false, delete: false, approve: false },
+    lokasiProyek: { view: true, create: false, edit: false, delete: false, approve: false },
 
     // System - No access
-    system: { view: false, create: false, edit: false, delete: false },
-    userManagement: { view: false, create: false, edit: false, delete: false },
+    system: { view: false, create: false, edit: false, delete: false, approve: false },
+    userManagement: { view: false, create: false, edit: false, delete: false, approve: false },
   },
 };
 
@@ -195,7 +196,7 @@ export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
 export const hasPermission = (
   role: UserRole | undefined,
   resource: string,
-  action: 'view' | 'create' | 'edit' | 'delete'
+  action: 'view' | 'create' | 'edit' | 'delete' | 'approve'
 ): boolean => {
   const effectiveRole = role || 'viewer';
   const rolePerms = ROLE_PERMISSIONS[effectiveRole as UserRole];
@@ -283,4 +284,8 @@ export const shouldShowEditButton = (role: UserRole | undefined, resource: strin
 
 export const shouldShowDeleteButton = (role: UserRole | undefined, resource: string): boolean => {
   return hasPermission(role, resource, 'delete');
+};
+
+export const shouldShowApproveButton = (role: UserRole | undefined, resource: string): boolean => {
+  return hasPermission(role, resource, 'approve');
 };

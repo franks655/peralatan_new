@@ -50,7 +50,6 @@ const menuItems: MenuItem[] = [
     items: [
       { title: 'Permohonan Perawatan Berkala', path: '/ppa-perawatan-berkala' },
       { title: 'Permohonan Perbaikan Alat', path: '/ppa-perbaikan-berkala' },
-      { title: 'Perintah Pemeriksaan', path: '/ppa-perbaikan-berkala' },
     ]
   },
   {
