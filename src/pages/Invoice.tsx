@@ -34,13 +34,14 @@ const Invoice = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [currentInvoice, setCurrentInvoice] = useState<Invoice | null>(null);
-  const [formData, setFormData] = useState<Omit<Invoice, 'id' | 'created_at' | 'updated_at' | 'lokasi'>>({
+  const [formData, setFormData] = useState<Omit<Invoice, 'id' | 'created_at' | 'updated_at'>>({
     no_invoice: '',
     tanggal: new Date().toISOString().split('T')[0],
     nama_penyewa: '',
     nama_perusahaan: '',
     pekerjaan: '',
     lokasi_proyek_id: '',
+    lokasi: '',
     periode_bulan: new Date().getMonth() + 1,
     periode_tahun: new Date().getFullYear(),
     lampiran: '',
@@ -67,6 +68,7 @@ const Invoice = () => {
       nama_perusahaan: '',
       pekerjaan: '',
       lokasi_proyek_id: '',
+      lokasi: '',
       periode_bulan: new Date().getMonth() + 1,
       periode_tahun: new Date().getFullYear(),
       lampiran: '',
@@ -84,6 +86,8 @@ const Invoice = () => {
       satuan_lama_sewa: 'Jam',
     });
     setUploadedFiles([]);
+    const fileEl = document.getElementById('lampiran_files') as HTMLInputElement | null;
+    if (fileEl) fileEl.value = '';
   };
 
   const handleEdit = (invoice: Invoice) => {
@@ -174,7 +178,7 @@ const Invoice = () => {
       satuan: 'Unit',
       satuan_lama_sewa: 'Jam',
     });
-    setUploadedFiles([]);
+    // NOTE: uploadedFiles sengaja TIDAK di-reset di sini, supaya lampiran tetap ikut tersimpan
 
     toast({
       title: 'Alat ditambahkan',
@@ -243,12 +247,17 @@ const Invoice = () => {
         });
 
         const filePaths = await Promise.all(filePromises);
-        lampiranPaths = filePaths.join(', ');
+        const newPaths = (filePaths as string[]).join(', ');
+        lampiranPaths = formData.lampiran ? `${formData.lampiran}, ${newPaths}` : newPaths;
         console.log('All files uploaded. Paths:', lampiranPaths);
       }
 
+      // Combobox mengembalikan teks nama proyek (boleh free text). Simpan teksnya di `lokasi`,
+      // dan isi lokasi_proyek_id hanya jika cocok dengan proyek yang ada (kalau tidak -> null).
+      const matchedProyek = lokasiProyekData.find((lp: any) => lp.namaProyek === formData.lokasi);
       const invoiceData = {
         ...formData,
+        lokasi_proyek_id: (matchedProyek?.id ?? null) as any,
         lampiran: lampiranPaths,
       };
 
@@ -280,7 +289,25 @@ const Invoice = () => {
       return;
     }
 
-    const lokasiProyek = lokasiProyekData.find((lp) => lp.id === invoice.lokasi_proyek_id);
+    // lokasi_proyek_id bisa berisi id ATAU nama proyek (tergantung nilai dari combobox), cocokkan keduanya
+    const lokasiProyek = lokasiProyekData.find(
+      (lp: any) => lp.id === invoice.lokasi_proyek_id || lp.namaProyek === invoice.lokasi_proyek_id
+    );
+    const lokasiText = invoice.lokasi || lokasiProyek?.namaProyek || invoice.lokasi_proyek_id || '-';
+
+    const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+    const lampiranHtml = invoice.lampiran
+      ? invoice.lampiran
+          .split(',')
+          .map((p) => p.trim())
+          .filter(Boolean)
+          .map((p) => {
+            const href = /^https?:\/\//.test(p) ? p : `${apiBase}${p.startsWith('/') ? '' : '/'}${p}`;
+            return `<a href="${href}" target="_blank" style="color: #0066cc;">${p.split('/').pop()}</a>`;
+          })
+          .join(', ')
+      : '-';
+    const lastDay = new Date(invoice.periode_tahun, invoice.periode_bulan, 0).getDate();
     const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
     const periodeText = `${monthNames[invoice.periode_bulan - 1]} ${invoice.periode_tahun}`;
 
@@ -293,7 +320,7 @@ const Invoice = () => {
     const itemsHtml = invoice.items?.map((item, index) => `
       <tr>
         <td class="center">${index + 1}</td>
-        <td>${item.no_lambung} - ${item.nama_alat}<br/><small style="color: #666;">Periode: 1-${invoice.periode_bulan} ${monthNames[invoice.periode_bulan - 1]} ${invoice.periode_tahun}</small></td>
+        <td>${item.no_lambung} - ${item.nama_alat}<br/><small style="color: #666;">Periode: 1-${lastDay} ${monthNames[invoice.periode_bulan - 1]} ${invoice.periode_tahun}</small></td>
         <td class="center">${item.qty}</td>
         <td>${item.satuan}</td>
         <td class="num">${formatRupiah(item.harga_sewa)}</td>
@@ -368,8 +395,8 @@ const Invoice = () => {
             <div class="info-row"><span class="info-label">Nama Penyewa:</span><span class="info-val">${invoice.nama_penyewa}</span></div>
             <div class="info-row"><span class="info-label">Nama Perusahaan:</span><span class="info-val">${invoice.nama_perusahaan}</span></div>
             <div class="info-row"><span class="info-label">Pekerjaan:</span><span class="info-val">${invoice.pekerjaan || '-'}</span></div>
-            <div class="info-row"><span class="info-label">Lokasi Pekerjaan:</span><span class="info-val">${invoice.lokasi || '-'}</span></div>
-            <div class="info-row"><span class="info-label">Lampiran:</span><span class="info-val">${invoice.lampiran ? invoice.lampiran.split(',').map(path => `<a href="${import.meta.env.VITE_API_URL}${path}" target="_blank" style="color: #0066cc;">${path.split('/').pop()}</a>`).join(', ') : '-'}</span></div>
+            <div class="info-row"><span class="info-label">Lokasi Pekerjaan:</span><span class="info-val">${lokasiText}</span></div>
+            <div class="info-row"><span class="info-label">Lampiran:</span><span class="info-val">${lampiranHtml || '-'}</span></div>
             <div class="info-row"><span class="info-label">Keterangan:</span><span class="info-val">${invoice.keterangan || '-'}</span></div>
           </div>
 
@@ -499,8 +526,8 @@ const Invoice = () => {
               <div className="space-y-2">
                 <Label htmlFor="lokasi_proyek">Lokasi Proyek</Label>
                 <ComboboxLokasiProyek
-                  value={formData.lokasi_proyek_id || ''}
-                  onChange={(value) => setFormData({ ...formData, lokasi_proyek_id: value })}
+                  value={formData.lokasi || ''}
+                  onChange={(value) => setFormData({ ...formData, lokasi: value })}
                 />
               </div>
               <div className="space-y-2">

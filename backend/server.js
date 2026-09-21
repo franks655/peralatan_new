@@ -258,6 +258,38 @@ app.post('/api/invoice/upload', (req, res) => {
 // Serve static files for invoice uploads
 app.use('/uploads/invoice', express.static(invoiceUploadsDir));
 
+// ── Helper: whitelist kolom invoice & bersihkan item ──────
+// Frontend mengirim balik seluruh objek hasil GET (termasuk kolom hasil JOIN seperti
+// lokasi_proyek_name, dan item lengkap dengan id/invoice_id/created_at). Kolom-kolom itu
+// bukan kolom tabel / bentrok dengan id yang di-generate, sehingga INSERT/UPDATE error.
+const INVOICE_COLUMNS = [
+  'id', 'no_invoice', 'tanggal', 'nama_penyewa', 'nama_perusahaan', 'pekerjaan',
+  'lokasi_proyek_id', 'lokasi', 'periode_bulan', 'periode_tahun', 'lampiran',
+  'keterangan', 'total_invoice', 'status'
+];
+const INVOICE_ITEM_SKIP = ['id', 'invoice_id', 'created_at', 'updated_at'];
+
+function pickInvoiceColumns(body) {
+  const out = {};
+  for (const col of INVOICE_COLUMNS) {
+    if (body[col] === undefined) continue;
+    let v = body[col];
+    if (col === 'tanggal' && typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) {
+      v = v.slice(0, 10); // ISO string -> YYYY-MM-DD untuk kolom DATE
+    }
+    out[col] = v;
+  }
+  return out;
+}
+
+function cleanInvoiceItem(item) {
+  const out = {};
+  for (const [k, v] of Object.entries(item)) {
+    if (!INVOICE_ITEM_SKIP.includes(k)) out[k] = v;
+  }
+  return out;
+}
+
 // GET invoice with items
 app.get('/api/invoice', async (req, res) => {
   try {
@@ -284,9 +316,12 @@ app.get('/api/invoice', async (req, res) => {
       );
       // Add lokasi_proyek_name to the invoice data
       const processedInvoice = processRow(invoice);
-      if (processedInvoice.lokasi_proyek_name) {
-        processedInvoice.lokasi = processedInvoice.lokasi_proyek_name;
-      }
+      // Prioritas: teks lokasi yang tersimpan di invoice -> nama proyek dari JOIN -> isi lokasi_proyek_id (data lama)
+      processedInvoice.lokasi =
+        processedInvoice.lokasi ||
+        processedInvoice.nama_proyek_name ||
+        processedInvoice.lokasi_proyek_id ||
+        null;
       invoicesWithItems.push({
         ...processedInvoice,
         items: items.map(processRow)
@@ -320,17 +355,10 @@ app.post('/api/invoice', async (req, res) => {
     }
 
     // Insert invoice header
-    const invoiceCols = Object.keys(body)
-      .filter(key => key !== 'items')
-      .map(c => `\`${c}\``)
-      .join(', ');
-    const invoicePlaceholders = Object.keys(body)
-      .filter(key => key !== 'items')
-      .map(() => '?')
-      .join(', ');
-    const invoiceVals = Object.keys(body)
-      .filter(key => key !== 'items')
-      .map(key => body[key]);
+    const headerData = pickInvoiceColumns(body);
+    const invoiceCols = Object.keys(headerData).map(c => `\`${c}\``).join(', ');
+    const invoicePlaceholders = Object.keys(headerData).map(() => '?').join(', ');
+    const invoiceVals = Object.values(headerData);
 
     const [insertResult] = await db.query(
       `INSERT INTO \`invoice\` (${invoiceCols}) VALUES (${invoicePlaceholders})`,
@@ -342,7 +370,8 @@ app.post('/api/invoice', async (req, res) => {
     if (body.items && Array.isArray(body.items) && body.items.length > 0) {
       const { v4: uuidv4 } = require('uuid');
 
-      for (const item of body.items) {
+      for (const rawItem of body.items) {
+        const item = cleanInvoiceItem(rawItem);
         const itemId = uuidv4();
         const itemCols = Object.keys(item).map(c => `\`${c}\``).join(', ');
         const itemPlaceholders = Object.keys(item).map(() => '?').join(', ');
@@ -399,7 +428,9 @@ app.patch('/api/invoice', async (req, res) => {
     const eqParsed = JSON.parse(eq);
 
     // Remove items from body for invoice update
-    const { items, ...invoiceData } = body;
+    const { items, ...restBody } = body;
+    const invoiceData = pickInvoiceColumns(restBody);
+    delete invoiceData.id;
 
     // Update invoice header
     const setCols = Object.keys(invoiceData).map(c => `\`${c}\` = ?`).join(', ');
@@ -407,22 +438,26 @@ app.patch('/api/invoice', async (req, res) => {
     const whereCols = Object.keys(eqParsed).map(c => `\`${c}\` = ?`).join(' AND ');
     const whereVals = Object.values(eqParsed);
 
-    await db.query(
-      `UPDATE \`invoice\` SET ${setCols} WHERE ${whereCols}`,
-      [...setVals, ...whereVals]
-    );
+    if (setCols) {
+      await db.query(
+        `UPDATE \`invoice\` SET ${setCols} WHERE ${whereCols}`,
+        [...setVals, ...whereVals]
+      );
+    }
 
     // Delete existing items
+    // (sebelumnya memakai whereCols = `id` = ? sehingga tidak pernah menghapus item lama -> item dobel)
     await db.query(
-      `DELETE FROM \`invoice_items\` WHERE ${whereCols}`,
-      whereVals
+      'DELETE FROM `invoice_items` WHERE `invoice_id` = ?',
+      [eqParsed.id]
     );
 
     // Insert new items if provided
     if (items && Array.isArray(items) && items.length > 0) {
       const { v4: uuidv4 } = require('uuid');
 
-      for (const item of items) {
+      for (const rawItem of items) {
+        const item = cleanInvoiceItem(rawItem);
         const itemId = uuidv4();
         const itemCols = Object.keys(item).map(c => `\`${c}\``).join(', ');
         const itemPlaceholders = Object.keys(item).map(() => '?').join(', ');
@@ -1023,4 +1058,3 @@ app.listen(PORT, () => {
   console.log(`🚀 Backend API berjalan di http://localhost:${PORT}`);
   console.log(`📋 Health check: http://localhost:${PORT}/api/health`);
 });
-
