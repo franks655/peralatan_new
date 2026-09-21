@@ -30,6 +30,9 @@ export const ALL_PAGES: { key: string; label: string }[] = [
   { key: 'kegiatanMekanik', label: 'Kegiatan Mekanik' },
   { key: 'stockSparepart', label: 'Stock Sparepart' },
   { key: 'ppa', label: 'PPA' },
+  { key: 'ppaPerawatanBerkala', label: 'PPA Perawatan Berkala' },
+  { key: 'ppaPerbaikanBerkala', label: 'PPA Perbaikan Berkala' },
+  { key: 'perawatanBerkala', label: 'Perawatan Berkala' },
   { key: 'formPerbaikan', label: 'Form Perbaikan' },
   { key: 'stockBBM', label: 'Stock BBM' },
   { key: 'stockOli', label: 'Stock Oli' },
@@ -73,6 +76,9 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     formPerbaikan: { view: true, create: true, edit: true, delete: true, approve: true },
     stockSparepart: { view: true, create: true, edit: true, delete: true, approve: true },
     ppa: { view: true, create: true, edit: true, delete: true, approve: true },
+    ppaPerawatanBerkala: { view: true, create: true, edit: true, delete: true, approve: true },
+    ppaPerbaikanBerkala: { view: true, create: true, edit: true, delete: true, approve: true },
+    perawatanBerkala: { view: true, create: true, edit: true, delete: true, approve: true },
     kegiatanMekanik: { view: true, create: true, edit: true, delete: true, approve: true },
 
     // Laporan Bulanan
@@ -101,6 +107,9 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     formPerbaikan: { view: true, create: true, edit: true, delete: false, approve: false },
     stockSparepart: { view: true, create: false, edit: false, delete: false, approve: false },
     ppa: { view: true, create: true, edit: true, delete: false, approve: false },
+    ppaPerawatanBerkala: { view: true, create: true, edit: true, delete: false, approve: false },
+    ppaPerbaikanBerkala: { view: true, create: true, edit: true, delete: false, approve: false },
+    perawatanBerkala: { view: true, create: false, edit: false, delete: false, approve: false },
     kegiatanMekanik: { view: true, create: true, edit: true, delete: false, approve: false },
 
     // Laporan Bulanan - Hanya view
@@ -125,6 +134,9 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     formPerbaikan: { view: true, create: false, edit: false, delete: false, approve: false },
     stockSparepart: { view: true, create: false, edit: false, delete: false, approve: false },
     ppa: { view: true, create: false, edit: false, delete: false, approve: false },
+    ppaPerawatanBerkala: { view: true, create: false, edit: false, delete: false, approve: false },
+    ppaPerbaikanBerkala: { view: true, create: false, edit: false, delete: false, approve: false },
+    perawatanBerkala: { view: true, create: false, edit: false, delete: false, approve: false },
     kegiatanMekanik: { view: true, create: false, edit: false, delete: false, approve: false },
     stockBBM: { view: true, create: false, edit: false, delete: false, approve: false },
     stockOli: { view: true, create: false, edit: false, delete: false, approve: false },
@@ -152,7 +164,7 @@ export const ROLE_PERMISSION_TEMPLATE: Record<UserRole, Record<string, Record<st
   commentator: Object.fromEntries(
     ALL_PAGES.map(p => {
       const isSystem = p.key === 'system';
-      const canWrite = ['formPerbaikan', 'ppa', 'kegiatanMekanik'].includes(p.key);
+      const canWrite = ['formPerbaikan', 'ppa', 'ppaPerawatanBerkala', 'ppaPerbaikanBerkala', 'kegiatanMekanik'].includes(p.key);
       return [p.key, {
         can_view: !isSystem,
         can_create: canWrite,
