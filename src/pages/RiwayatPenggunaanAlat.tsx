@@ -135,7 +135,8 @@ function RPAHistoryRow({ rpa, isAdmin }: { rpa: RPAItem; isAdmin: boolean }) {
 
 export default function RiwayatPenggunaanAlat({ embedded = false }: { embedded?: boolean }) {
   const { data: rpaList, isLoading } = useRPAWithDetails();
-  const { can_approve: isAdmin } = usePagePermission('riwayatPenggunaanAlat');
+  const { can_approve: canComplete, can_edit: canEdit } = usePagePermission('riwayatPenggunaanAlat');
+  const canMarkSelesai = canComplete || canEdit;
 
   const [filter, setFilter] = useState<'semua' | 'digunakan' | 'selesai'>('semua');
   const [currentPage, setCurrentPage] = useState(1);
@@ -210,7 +211,7 @@ export default function RiwayatPenggunaanAlat({ embedded = false }: { embedded?:
                 </TableHeader>
                 <TableBody>
                  {paginatedData.map(rpa => (
-                    <RPAHistoryRow key={rpa.id} rpa={rpa} isAdmin={isAdmin} />
+                    <RPAHistoryRow key={rpa.id} rpa={rpa} isAdmin={canMarkSelesai} />
                   ))}
                 </TableBody>
               </Table>

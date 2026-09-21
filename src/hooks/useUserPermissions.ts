@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useToast } from './use-toast';
-import { ALL_PAGES, ROLE_PERMISSION_TEMPLATE, UserRole } from '../utils/rolePermissions';
+import { ALL_PAGES, ROLE_PERMISSION_TEMPLATE, UserRole, expandPageKeys } from '../utils/rolePermissions';
 import { invalidateUserPermissionCache } from './useCurrentUserPermissions';
 
 
@@ -35,22 +35,30 @@ function defaultPermissionMap(): PermissionMap {
   );
 }
 
+function rowPerms(row: UserPermission): Omit<UserPermission, 'id' | 'user_id' | 'page_key'> {
+  return {
+    can_view: Boolean(row.can_view),
+    can_create: Boolean(row.can_create),
+    can_edit: Boolean(row.can_edit),
+    can_delete: Boolean(row.can_delete),
+    can_export_excel: Boolean(row.can_export_excel),
+    can_export_pdf: Boolean(row.can_export_pdf),
+    can_import: Boolean(row.can_import),
+    can_approve: Boolean(row.can_approve),
+    can_print: Boolean(row.can_print),
+  };
+}
+
 function rowsToMap(rows: UserPermission[]): PermissionMap {
   const map = defaultPermissionMap();
   for (const row of rows) {
-    if (map[row.page_key] !== undefined) {
-      map[row.page_key] = {
-        can_view: Boolean(row.can_view),
-        can_create: Boolean(row.can_create),
-        can_edit: Boolean(row.can_edit),
-        can_delete: Boolean(row.can_delete),
-        can_export_excel: Boolean(row.can_export_excel),
-        can_export_pdf: Boolean(row.can_export_pdf),
-        can_import: Boolean(row.can_import),
-        can_approve: Boolean(row.can_approve),
-        can_print: Boolean(row.can_print),
-      };
+    const perms = rowPerms(row);
+    for (const key of expandPageKeys(row.page_key)) {
+      if (map[key] !== undefined) map[key] = perms;
     }
+  }
+  for (const row of rows) {
+    if (map[row.page_key] !== undefined) map[row.page_key] = rowPerms(row);
   }
   return map;
 }

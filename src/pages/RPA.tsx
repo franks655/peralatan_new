@@ -74,6 +74,13 @@ export default function RPA() {
   });
 
   const { can_create: canCreate, can_edit: canEdit, can_delete: canDelete, can_approve: isAdmin, can_print: canPrint } = usePagePermission('rpa');
+  const { can_view: canViewRiwayat } = usePagePermission('riwayatPenggunaanAlat');
+
+  useEffect(() => {
+    if (activeTab === 'riwayat' && !canViewRiwayat) {
+      setActiveTab('rencana');
+    }
+  }, [activeTab, canViewRiwayat]);
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentRPAId, setCurrentRPAId] = useState<number | null>(null);
@@ -679,6 +686,7 @@ export default function RPA() {
           <CalendarIcon className="w-4 h-4" />
           Rencana Penggunaan Alat (RPA)
         </button>
+        {canViewRiwayat && (
         <button
           type="button"
           onClick={() => setActiveTab('riwayat')}
@@ -690,6 +698,7 @@ export default function RPA() {
           <History className="w-4 h-4" />
           Riwayat Penggunaan Alat
         </button>
+        )}
       </div>
 
       {activeTab === 'rencana' ? (
@@ -1038,9 +1047,9 @@ export default function RPA() {
             </form>
           )}
         </>
-      ) : (
+      ) : canViewRiwayat ? (
         <RiwayatPenggunaanAlat embedded={true} />
-      )}
+      ) : null}
 
       {/* Dialog Form Item Alat (Popup) */}
       <Dialog open={showItemDialog} onOpenChange={setShowItemDialog}>

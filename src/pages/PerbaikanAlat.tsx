@@ -449,6 +449,10 @@ interface PemeriksaanSectionProps {
   onApprovePemeriksaan: () => void;
   isApproving: boolean;
   canApprove: boolean;
+  canCreate: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+  canPrint: boolean;
   onToggleCheckedKerusakan: (jk: string) => void;
 }
 
@@ -457,8 +461,10 @@ const PemeriksaanSection = memo(({
   isEditing, onCancelEdit, isSaving, items, isLoadingItems,
   onEditItem, onDeleteItem, deletingId, sparepartOptions,
   onApprovePemeriksaan, isApproving, canApprove,
+  canCreate, canEdit, canDelete, canPrint,
   onToggleCheckedKerusakan
 }: PemeriksaanSectionProps) => {
+  const canSubmitForm = isEditing ? canEdit : canCreate;
   const totalEstimasi = useMemo(() => {
     return items.reduce((acc, it) => acc + (Number(it.total_harga) || (Number(it.quantity) * Number(it.harga)) || 0), 0);
   }, [items]);
@@ -669,7 +675,7 @@ const PemeriksaanSection = memo(({
           </div>
         </div>
         <div className="flex items-center gap-2 self-end sm:self-auto">
-          {(items.length > 0 || jenisKerusakanList.length > 0) && (
+          {canPrint && (items.length > 0 || jenisKerusakanList.length > 0) && (
             <Button
               type="button"
               variant="outline"
@@ -727,7 +733,7 @@ const PemeriksaanSection = memo(({
               return (
                 <label
                   key={idx}
-                  className={`flex items-start gap-2.5 p-2.5 rounded-lg border text-xs cursor-pointer select-none transition-all ${isChecked
+                  className={`flex items-start gap-2.5 p-2.5 rounded-lg border text-xs select-none transition-all ${canEdit ? 'cursor-pointer' : 'cursor-default'} ${isChecked
                     ? 'bg-amber-50/80 border-amber-400 text-amber-950 font-semibold shadow-2xs'
                     : 'bg-gray-50/60 border-gray-200 text-gray-600 hover:bg-gray-50'
                     }`}
@@ -735,7 +741,8 @@ const PemeriksaanSection = memo(({
                   <input
                     type="checkbox"
                     checked={isChecked}
-                    onChange={() => onToggleCheckedKerusakan(jk)}
+                    disabled={!canEdit}
+                    onChange={() => canEdit && onToggleCheckedKerusakan(jk)}
                     className="mt-0.5 h-4 w-4 rounded border-amber-400 text-amber-600 focus:ring-amber-500 cursor-pointer"
                   />
                   <span className="flex-1 leading-snug">{jk}</span>
@@ -747,7 +754,7 @@ const PemeriksaanSection = memo(({
       )}
 
       {/* Form Input Item Pemeriksaan */}
-      <form onSubmit={onSubmit} className="bg-white/80 backdrop-blur-sm border border-amber-100 p-4 rounded-lg shadow-xs space-y-3">
+      {canSubmitForm && <form onSubmit={onSubmit} className="bg-white/80 backdrop-blur-sm border border-amber-100 p-4 rounded-lg shadow-xs space-y-3">
         <div className="text-xs font-semibold text-gray-700 uppercase tracking-wider flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <Wrench className="h-3.5 w-3.5 text-amber-600" />
@@ -860,7 +867,7 @@ const PemeriksaanSection = memo(({
             </Button>
           </div>
         </div>
-      </form>
+      </form>}
 
       {/* Tabel Item Pemeriksaan */}
       <div className="space-y-2">
@@ -888,7 +895,7 @@ const PemeriksaanSection = memo(({
                   <th className="py-2 px-3 text-right">Harga</th>
                   <th className="py-2 px-3 text-right">Total Harga</th>
                   <th className="py-2 px-3 text-center w-28">Status</th>
-                  <th className="py-2 px-3 text-center w-20">Aksi</th>
+                  {(canEdit || canDelete) && <th className="py-2 px-3 text-center w-20">Aksi</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -909,8 +916,10 @@ const PemeriksaanSection = memo(({
                           {it.status === 'approved' ? 'Disetujui' : 'Menunggu'}
                         </span>
                       </td>
+                      {(canEdit || canDelete) && (
                       <td className="py-2 px-3 text-center">
                         <div className="flex items-center justify-center space-x-1">
+                          {canEdit && (
                           <button
                             type="button"
                             onClick={() => onEditItem(it)}
@@ -919,6 +928,8 @@ const PemeriksaanSection = memo(({
                           >
                             <Edit className="h-3.5 w-3.5" />
                           </button>
+                          )}
+                          {canDelete && (
                           <button
                             type="button"
                             onClick={() => onDeleteItem(it.id)}
@@ -932,8 +943,10 @@ const PemeriksaanSection = memo(({
                               <Trash2 className="h-3.5 w-3.5" />
                             )}
                           </button>
+                          )}
                         </div>
                       </td>
+                      )}
                     </tr>
                   );
                 })}
@@ -944,7 +957,7 @@ const PemeriksaanSection = memo(({
                   <td className="py-2 px-3 text-right text-amber-900 font-bold tabular-nums">
                     Rp {totalEstimasi.toLocaleString('id-ID')}
                   </td>
-                  <td colSpan={2}></td>
+                  <td colSpan={(canEdit || canDelete) ? 2 : 1}></td>
                 </tr>
               </tfoot>
             </table>
@@ -1003,14 +1016,20 @@ interface SPKSectionProps {
   deletingId: string | null;
   sparepartOptions: SparepartOption[];
   approvedPemeriksaanItems: PerbaikanAlatPemeriksaanItem[];
+  canCreate: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+  canPrint: boolean;
 }
 
 const SPKSection = memo(({
   selectedItem, onClose, form, onChangeForm, onSubmit,
   isEditing, onCancelEdit, isSaving, items, isLoadingItems,
   onEditItem, onDeleteItem, deletingId, sparepartOptions,
-  approvedPemeriksaanItems
+  approvedPemeriksaanItems,
+  canCreate, canEdit, canDelete, canPrint
 }: SPKSectionProps) => {
+  const canSubmitForm = isEditing ? canEdit : canCreate;
   const totalBiaya = useMemo(() => {
     return items.reduce((acc, it) => acc + (Number(it.total_harga) || (Number(it.quantity) * Number(it.harga_satuan)) || 0), 0);
   }, [items]);
@@ -1198,7 +1217,7 @@ const SPKSection = memo(({
           </div>
         </div>
         <div className="flex items-center gap-2 self-end sm:self-auto">
-          {items.length > 0 && (
+          {canPrint && items.length > 0 && (
             <Button
               type="button"
               variant="outline"
@@ -1257,7 +1276,7 @@ const SPKSection = memo(({
       </div>
 
       {/* Quick Select from Approved Pemeriksaan Items or Checked Kerusakan */}
-      {(approvedPemeriksaanItems.length > 0 || checkedKerusakan.length > 0) && (
+      {canSubmitForm && (approvedPemeriksaanItems.length > 0 || checkedKerusakan.length > 0) && (
         <div className="bg-blue-50/50 p-2.5 rounded-lg border border-blue-100 text-xs space-y-2">
           {approvedPemeriksaanItems.length > 0 && (
             <div>
@@ -1315,7 +1334,7 @@ const SPKSection = memo(({
       )}
 
       {/* Form Input Item Perintah Kerja */}
-      <form onSubmit={onSubmit} className="bg-white/80 backdrop-blur-sm border border-blue-100 p-4 rounded-lg shadow-xs space-y-3">
+      {canSubmitForm && <form onSubmit={onSubmit} className="bg-white/80 backdrop-blur-sm border border-blue-100 p-4 rounded-lg shadow-xs space-y-3">
         <div className="text-xs font-semibold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
           <ClipboardList className="h-3.5 w-3.5 text-blue-600" />
           <span>{isEditing ? 'Edit Item Perintah Kerja' : 'Tambah Item Perintah Kerja'}</span>
@@ -1426,7 +1445,7 @@ const SPKSection = memo(({
             </Button>
           </div>
         </div>
-      </form>
+      </form>}
 
       {/* Tabel Item Perintah Kerja */}
       <div className="space-y-2">
@@ -1454,7 +1473,7 @@ const SPKSection = memo(({
                   <th className="py-2 px-3 text-right">Stock</th>
                   <th className="py-2 px-3 text-right">Harga Satuan</th>
                   <th className="py-2 px-3 text-right">Total Harga</th>
-                  <th className="py-2 px-3 text-center w-20">Aksi</th>
+                  {(canEdit || canDelete) && <th className="py-2 px-3 text-center w-20">Aksi</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -1475,8 +1494,10 @@ const SPKSection = memo(({
                       <td className="py-2 px-3 text-right font-bold text-gray-900 tabular-nums">
                         Rp {lineTotal.toLocaleString('id-ID')}
                       </td>
+                      {(canEdit || canDelete) && (
                       <td className="py-2 px-3 text-center">
                         <div className="flex items-center justify-center space-x-1">
+                          {canEdit && (
                           <button
                             type="button"
                             onClick={() => onEditItem(it)}
@@ -1485,6 +1506,8 @@ const SPKSection = memo(({
                           >
                             <Edit className="h-3.5 w-3.5" />
                           </button>
+                          )}
+                          {canDelete && (
                           <button
                             type="button"
                             onClick={() => onDeleteItem(it.id)}
@@ -1498,8 +1521,10 @@ const SPKSection = memo(({
                               <Trash2 className="h-3.5 w-3.5" />
                             )}
                           </button>
+                          )}
                         </div>
                       </td>
+                      )}
                     </tr>
                   );
                 })}
@@ -1510,7 +1535,7 @@ const SPKSection = memo(({
                   <td className="py-2.5 px-3 text-right text-blue-900 font-bold tabular-nums">
                     Rp {totalBiaya.toLocaleString('id-ID')}
                   </td>
-                  <td></td>
+                  {(canEdit || canDelete) && <td></td>}
                 </tr>
               </tfoot>
             </table>
@@ -1538,8 +1563,24 @@ export default function PerbaikanAlat() {
   const {
     can_create: canCreate, can_edit: canEdit, can_delete: canDelete,
     can_export_excel: canExportExcel, can_print: canPrint, can_approve: canApprove,
-  } = usePagePermission('ppa');
-  const canShowActions = canEdit || canDelete || canApprove;
+  } = usePagePermission('permohonanPerbaikanAlat');
+  const {
+    can_view: canViewPemeriksaan,
+    can_create: canCreatePemeriksaan,
+    can_edit: canEditPemeriksaan,
+    can_delete: canDeletePemeriksaan,
+    can_print: canPrintPemeriksaan,
+    can_approve: canApprovePemeriksaan,
+  } = usePagePermission('pemeriksaanPerbaikanAlat');
+  const {
+    can_view: canViewSpk,
+    can_create: canCreateSpk,
+    can_edit: canEditSpk,
+    can_delete: canDeleteSpk,
+    can_print: canPrintSpk,
+  } = usePagePermission('spkPerbaikanAlat');
+  const canOpenProcess = canViewPemeriksaan || canViewSpk;
+  const canShowActions = canEdit || canDelete || canApprove || canOpenProcess;
 
   /* ── Sparepart stocks calculated from transactions/items ── */
   const sparepartOptions = useMemo<SparepartOption[]>(() => {
@@ -1804,6 +1845,11 @@ export default function PerbaikanAlat() {
       approved_by: status === 'approved' ? 'Administrator' : null,
       approved_at: status === 'approved' ? format(new Date(), 'yyyy-MM-dd HH:mm:ss') : null,
     });
+    if (status === 'approved' && canOpenProcess) {
+      setActiveProcessItem({ ...selectedItem, status: 'approved' });
+      setPemeriksaanForm(emptyPemeriksaanForm());
+      setSpkForm(emptySPKForm());
+    }
     setShowApproveDialog(false);
     setShowRejectDialog(false);
     setSelectedItem(null);
@@ -1811,7 +1857,7 @@ export default function PerbaikanAlat() {
 
   /* ── Toggle Checked Kerusakan in Pemeriksaan ──────────── */
   const handleToggleCheckedKerusakan = async (jk: string) => {
-    if (!activeProcessItem) return;
+    if (!activeProcessItem || !canEditPemeriksaan) return;
     const current = parseKerusakanList(activeProcessItem.checked_kerusakan);
     const updated = current.includes(jk)
       ? current.filter(x => x !== jk)
@@ -1837,6 +1883,7 @@ export default function PerbaikanAlat() {
   const handleSubmitPemeriksaan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeProcessItem) return;
+    if (editingPemeriksaanId ? !canEditPemeriksaan : !canCreatePemeriksaan) return;
 
     if (!pemeriksaanForm.jenis_perbaikan.trim()) {
       toast({ title: 'Peringatan', description: 'Jenis perbaikan harus diisi', variant: 'destructive' });
@@ -1884,6 +1931,7 @@ export default function PerbaikanAlat() {
   };
 
   const handleDeletePemeriksaanItem = async (id: string) => {
+    if (!canDeletePemeriksaan) return;
     if (confirm('Hapus item perintah pemeriksaan ini?')) {
       setDeletingPemeriksaanId(id);
       try {
@@ -1896,7 +1944,7 @@ export default function PerbaikanAlat() {
 
   const [isApprovingPemeriksaan, setIsApprovingPemeriksaan] = useState(false);
   const handleApproveAllPemeriksaan = async () => {
-    if (!activeProcessItem || !pemeriksaanItems.length) return;
+    if (!activeProcessItem || !pemeriksaanItems.length || !canApprovePemeriksaan) return;
     setIsApprovingPemeriksaan(true);
     try {
       for (const it of pemeriksaanItems) {
@@ -1919,6 +1967,7 @@ export default function PerbaikanAlat() {
   const handleSubmitSPK = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeProcessItem) return;
+    if (editingSPKItemId ? !canEditSpk : !canCreateSpk) return;
 
     if (!spkForm.jenis_perbaikan.trim()) {
       toast({ title: 'Peringatan', description: 'Jenis perbaikan harus diisi', variant: 'destructive' });
@@ -1968,6 +2017,7 @@ export default function PerbaikanAlat() {
   };
 
   const handleDeleteSPKItem = async (id: string) => {
+    if (!canDeleteSpk) return;
     if (confirm('Hapus item perintah kerja ini?')) {
       setDeletingSPKId(id);
       try {
@@ -2111,7 +2161,7 @@ ${data.map((item, idx) => `<tr>
           {/* Active Process Panels (Pemeriksaan & SPK) */}
           {activeProcessItem && (
             <div className="space-y-4">
-              {/* Panel 1: Perintah Pemeriksaan */}
+              {canViewPemeriksaan && (
               <PemeriksaanSection
                 selectedItem={activeProcessItem}
                 onClose={() => setActiveProcessItem(null)}
@@ -2129,12 +2179,16 @@ ${data.map((item, idx) => `<tr>
                 sparepartOptions={sparepartOptions}
                 onApprovePemeriksaan={handleApproveAllPemeriksaan}
                 isApproving={isApprovingPemeriksaan}
-                canApprove={canApprove}
+                canApprove={canApprovePemeriksaan}
+                canCreate={canCreatePemeriksaan}
+                canEdit={canEditPemeriksaan}
+                canDelete={canDeletePemeriksaan}
+                canPrint={canPrintPemeriksaan}
                 onToggleCheckedKerusakan={handleToggleCheckedKerusakan}
               />
+              )}
 
-              {/* Panel 2: Perintah Kerja (SPK) — only renders once pemeriksaan is approved */}
-              {isPemeriksaanApproved && (
+              {isPemeriksaanApproved && canViewSpk && (
                 <SPKSection
                   selectedItem={activeProcessItem}
                   onClose={() => setActiveProcessItem(null)}
@@ -2151,6 +2205,10 @@ ${data.map((item, idx) => `<tr>
                   deletingId={deletingSPKId}
                   sparepartOptions={sparepartOptions}
                   approvedPemeriksaanItems={approvedPemeriksaanItems}
+                  canCreate={canCreateSpk}
+                  canEdit={canEditSpk}
+                  canDelete={canDeleteSpk}
+                  canPrint={canPrintSpk}
                 />
               )}
             </div>
@@ -2263,7 +2321,7 @@ ${data.map((item, idx) => `<tr>
                             )}
 
                             {/* Proses Pemeriksaan & SPK button for approved permohonan */}
-                            {item.status === 'approved' && (
+                            {item.status === 'approved' && canOpenProcess && (
                               <Button
                                 variant="outline"
                                 size="sm"

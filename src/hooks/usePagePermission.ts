@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { shouldShowCreateButton, shouldShowEditButton, shouldShowDeleteButton, shouldShowActionColumn, ROLE_PERMISSIONS } from '@/utils/rolePermissions';
+import { shouldShowCreateButton, shouldShowEditButton, shouldShowDeleteButton, shouldShowActionColumn, ROLE_PERMISSIONS, expandPageKeys } from '@/utils/rolePermissions';
 import type { UserRole } from '@/utils/rolePermissions';
 
 const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
@@ -68,7 +68,8 @@ export function usePagePermission(pageKey: string): PagePermission & { loading: 
         if (cancelled) return;
 
         const rows: Array<PagePermission & { page_key: string }> = json.data || [];
-        const row = rows.find(r => r.page_key === pageKey);
+        const row = rows.find(r => r.page_key === pageKey)
+          || rows.find(r => expandPageKeys(r.page_key).includes(pageKey));
 
         if (row) {
           // Gunakan custom permission dari database

@@ -17,28 +17,36 @@ export interface RolePermissions {
   [key: string]: Permission;
 }
 
+const FULL: Permission = { view: true, create: true, edit: true, delete: true, approve: true };
+const VIEW_ONLY: Permission = { view: true, create: false, edit: false, delete: false, approve: false };
+const WRITE_NO_APPROVE: Permission = { view: true, create: true, edit: true, delete: false, approve: false };
+const NONE: Permission = { view: false, create: false, edit: false, delete: false, approve: false };
+
 /**
- * Definisi semua halaman sistem untuk Manajemen Akses
+ * Definisi semua halaman/form yang tampil di Manajemen Akses User.
+ * Sinkronkan dengan backend/server.js ALL_PAGES.
  */
 export const ALL_PAGES: { key: string; label: string }[] = [
   { key: 'dashboard', label: 'Dashboard' },
-  { key: 'dataAlatBerat', label: 'Data Alat Berat' },
-  { key: 'dataAlatPendukung', label: 'Data Alat Pendukung' },
-  { key: 'sewaAlatEksternal', label: 'Sewa Alat' },
+  { key: 'dataAlatBerat', label: 'Database Alat Berat' },
+  { key: 'dataAlatPendukung', label: 'Database Alat Pendukung' },
+  { key: 'databaseKendaraan', label: 'Database Kendaraan' },
   { key: 'rpa', label: 'RPA' },
-  { key: 'riwayatPenggunaanAlat', label: 'Riwayat Penggunaan Alat' },
-  { key: 'kegiatanMekanik', label: 'Kegiatan Mekanik' },
-  { key: 'stockSparepart', label: 'Stock Sparepart' },
-  { key: 'ppa', label: 'PPA' },
-  { key: 'ppaPerawatanBerkala', label: 'PPA Perawatan Berkala' },
-  { key: 'ppaPerbaikanBerkala', label: 'PPA Perbaikan Berkala' },
-  { key: 'perawatanBerkala', label: 'Perawatan Berkala' },
-  { key: 'formPerbaikan', label: 'Form Perbaikan' },
-  { key: 'stockBBM', label: 'Stock BBM' },
-  { key: 'stockOli', label: 'Stock Oli' },
-  { key: 'timeSheet', label: 'Time Sheet' },
+  { key: 'riwayatPenggunaanAlat', label: 'Riwayat Penggunaan Alat (tab RPA)' },
+  { key: 'sewaAlatInternal', label: 'Sewa Alat Internal' },
+  { key: 'sewaAlatEksternal', label: 'Sewa Alat Eksternal' },
+  { key: 'timeSheet', label: 'Timesheet' },
   { key: 'invoice', label: 'Invoice' },
+  { key: 'lemburOperator', label: 'Lembur Operator' },
+  { key: 'permohonanPerawatanBerkala', label: 'Permohonan Perawatan Berkala' },
+  { key: 'spkPerawatanBerkala', label: 'Form SPK Perawatan Berkala' },
+  { key: 'permohonanPerbaikanAlat', label: 'Permohonan Perbaikan Alat' },
+  { key: 'pemeriksaanPerbaikanAlat', label: 'Form Pemeriksaan Perbaikan Alat' },
+  { key: 'spkPerbaikanAlat', label: 'Form SPK Perbaikan Alat' },
   { key: 'lokasiProyek', label: 'Lokasi Proyek' },
+  { key: 'stockBBM', label: 'Stok BBM' },
+  { key: 'stockSparepart', label: 'Stok Sparepart' },
+  { key: 'stockOli', label: 'Stok Oli' },
   { key: 'system', label: 'System' },
 ];
 
@@ -57,96 +65,50 @@ export const ALL_PERMISSION_TYPES: { key: string; label: string }[] = [
   { key: 'can_print', label: 'Print' },
 ];
 
+const COMMENTATOR_WRITE_KEYS = [
+  'permohonanPerawatanBerkala',
+  'spkPerawatanBerkala',
+  'permohonanPerbaikanAlat',
+  'pemeriksaanPerbaikanAlat',
+  'spkPerbaikanAlat',
+];
+
+/** Key lama di database → key baru di Manajemen Akses (agar akses existing tetap jalan). */
+const LEGACY_PAGE_KEY_MAP: Record<string, string[]> = {
+  ppa: [
+    'permohonanPerawatanBerkala',
+    'spkPerawatanBerkala',
+    'permohonanPerbaikanAlat',
+    'pemeriksaanPerbaikanAlat',
+    'spkPerbaikanAlat',
+  ],
+  ppaPerawatanBerkala: ['permohonanPerawatanBerkala'],
+  ppaPerbaikanBerkala: ['permohonanPerbaikanAlat'],
+  perawatanBerkala: ['permohonanPerawatanBerkala', 'spkPerawatanBerkala'],
+  formPerbaikan: ['pemeriksaanPerbaikanAlat', 'spkPerbaikanAlat'],
+};
+
+export function expandPageKeys(pageKey: string): string[] {
+  return LEGACY_PAGE_KEY_MAP[pageKey] || [pageKey];
+}
+
 /**
  * Definisi akses untuk setiap role
  */
 export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
-  admin: {
-    // Dashboard
-    dashboard: { view: true, create: true, edit: true, delete: true, approve: true },
+  admin: Object.fromEntries(ALL_PAGES.map(p => [p.key, FULL])),
 
-    // Data Alat Berat
-    dataAlatBerat: { view: true, create: true, edit: true, delete: true, approve: true },
-    dataAlatPendukung: { view: true, create: true, edit: true, delete: true, approve: true },
-    sewaAlatEksternal: { view: true, create: true, edit: true, delete: true, approve: true },
-    rpa: { view: true, create: true, edit: true, delete: true, approve: true },
-    riwayatPenggunaanAlat: { view: true, create: true, edit: true, delete: true, approve: true },
+  commentator: Object.fromEntries(
+    ALL_PAGES.map(p => {
+      if (p.key === 'system') return [p.key, NONE];
+      if (COMMENTATOR_WRITE_KEYS.includes(p.key)) return [p.key, WRITE_NO_APPROVE];
+      return [p.key, VIEW_ONLY];
+    })
+  ),
 
-    // Laporan Perbaikan
-    formPerbaikan: { view: true, create: true, edit: true, delete: true, approve: true },
-    stockSparepart: { view: true, create: true, edit: true, delete: true, approve: true },
-    ppa: { view: true, create: true, edit: true, delete: true, approve: true },
-    ppaPerawatanBerkala: { view: true, create: true, edit: true, delete: true, approve: true },
-    ppaPerbaikanBerkala: { view: true, create: true, edit: true, delete: true, approve: true },
-    perawatanBerkala: { view: true, create: true, edit: true, delete: true, approve: true },
-    kegiatanMekanik: { view: true, create: true, edit: true, delete: true, approve: true },
-
-    // Laporan Bulanan
-    stockBBM: { view: true, create: true, edit: true, delete: true, approve: true },
-    stockOli: { view: true, create: true, edit: true, delete: true, approve: true },
-    timeSheet: { view: true, create: true, edit: true, delete: true, approve: true },
-    lokasiProyek: { view: true, create: true, edit: true, delete: true, approve: true },
-
-    // System (admin only)
-    system: { view: true, create: true, edit: true, delete: true, approve: true },
-    userManagement: { view: true, create: true, edit: true, delete: true, approve: true },
-  },
-
-  commentator: {
-    // Dashboard
-    dashboard: { view: true, create: false, edit: false, delete: false, approve: false },
-
-    // Data Alat Berat - Hanya view
-    dataAlatBerat: { view: true, create: false, edit: false, delete: false, approve: false },
-    dataAlatPendukung: { view: true, create: false, edit: false, delete: false, approve: false },
-    sewaAlatEksternal: { view: true, create: false, edit: false, delete: false, approve: false },
-    rpa: { view: true, create: false, edit: false, delete: false, approve: false },
-    riwayatPenggunaanAlat: { view: true, create: false, edit: false, delete: false, approve: false },
-
-    // Laporan Perbaikan - Bisa create dan edit, tapi tidak bisa approve
-    formPerbaikan: { view: true, create: true, edit: true, delete: false, approve: false },
-    stockSparepart: { view: true, create: false, edit: false, delete: false, approve: false },
-    ppa: { view: true, create: true, edit: true, delete: false, approve: false },
-    ppaPerawatanBerkala: { view: true, create: true, edit: true, delete: false, approve: false },
-    ppaPerbaikanBerkala: { view: true, create: true, edit: true, delete: false, approve: false },
-    perawatanBerkala: { view: true, create: false, edit: false, delete: false, approve: false },
-    kegiatanMekanik: { view: true, create: true, edit: true, delete: false, approve: false },
-
-    // Laporan Bulanan - Hanya view
-    stockBBM: { view: true, create: false, edit: false, delete: false, approve: false },
-    stockOli: { view: true, create: false, edit: false, delete: false, approve: false },
-    timeSheet: { view: true, create: false, edit: false, delete: false, approve: false },
-    lokasiProyek: { view: true, create: false, edit: false, delete: false, approve: false },
-
-    // System - No access
-    system: { view: false, create: false, edit: false, delete: false, approve: false },
-    userManagement: { view: false, create: false, edit: false, delete: false, approve: false },
-  },
-
-  viewer: {
-    // Viewer bisa MELIHAT semua halaman
-    dashboard: { view: true, create: false, edit: false, delete: false, approve: false },
-    dataAlatBerat: { view: true, create: false, edit: false, delete: false, approve: false },
-    dataAlatPendukung: { view: true, create: false, edit: false, delete: false, approve: false },
-    sewaAlatEksternal: { view: true, create: false, edit: false, delete: false, approve: false },
-    rpa: { view: true, create: false, edit: false, delete: false, approve: false },
-    riwayatPenggunaanAlat: { view: true, create: false, edit: false, delete: false, approve: false },
-    formPerbaikan: { view: true, create: false, edit: false, delete: false, approve: false },
-    stockSparepart: { view: true, create: false, edit: false, delete: false, approve: false },
-    ppa: { view: true, create: false, edit: false, delete: false, approve: false },
-    ppaPerawatanBerkala: { view: true, create: false, edit: false, delete: false, approve: false },
-    ppaPerbaikanBerkala: { view: true, create: false, edit: false, delete: false, approve: false },
-    perawatanBerkala: { view: true, create: false, edit: false, delete: false, approve: false },
-    kegiatanMekanik: { view: true, create: false, edit: false, delete: false, approve: false },
-    stockBBM: { view: true, create: false, edit: false, delete: false, approve: false },
-    stockOli: { view: true, create: false, edit: false, delete: false, approve: false },
-    timeSheet: { view: true, create: false, edit: false, delete: false, approve: false },
-    lokasiProyek: { view: true, create: false, edit: false, delete: false, approve: false },
-
-    // System - No access
-    system: { view: false, create: false, edit: false, delete: false, approve: false },
-    userManagement: { view: false, create: false, edit: false, delete: false, approve: false },
-  },
+  viewer: Object.fromEntries(
+    ALL_PAGES.map(p => [p.key, p.key === 'system' ? NONE : VIEW_ONLY])
+  ),
 };
 
 /**
@@ -164,7 +126,7 @@ export const ROLE_PERMISSION_TEMPLATE: Record<UserRole, Record<string, Record<st
   commentator: Object.fromEntries(
     ALL_PAGES.map(p => {
       const isSystem = p.key === 'system';
-      const canWrite = ['formPerbaikan', 'ppa', 'ppaPerawatanBerkala', 'ppaPerbaikanBerkala', 'kegiatanMekanik'].includes(p.key);
+      const canWrite = COMMENTATOR_WRITE_KEYS.includes(p.key);
       return [p.key, {
         can_view: !isSystem,
         can_create: canWrite,
@@ -198,7 +160,7 @@ export const ROLE_PERMISSION_TEMPLATE: Record<UserRole, Record<string, Record<st
  */
 export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
   admin: 'Admin dapat mengakses semua fitur, membuat, mengedit, dan menghapus data',
-  commentator: 'Commentator dapat melihat data, membuat laporan perbaikan dan kegiatan mekanik',
+  commentator: 'Commentator dapat melihat data, membuat permohonan dan form SPK/pemeriksaan',
   viewer: 'Viewer hanya dapat melihat semua data tanpa dapat membuat atau mengedit',
 };
 
@@ -232,48 +194,9 @@ export const getAccessibleResources = (role: UserRole): string[] => {
  * Menu items untuk ditampilkan berdasarkan role
  */
 export const ROLE_MENU_ACCESS: Record<UserRole, string[]> = {
-  admin: [
-    'dashboard',
-    'dataAlatBerat',
-    'dataAlatPendukung',
-    'sewaAlatEksternal',
-    'rpa',
-    'riwayatPenggunaanAlat',
-    'formPerbaikan',
-    'stockSparepart',
-    'ppa',
-    'kegiatanMekanik',
-    'stockBBM',
-    'stockOli',
-    'timeSheet',
-    'system',
-    'manajemenUser',
-    'manajemenAksesUser',
-    'auditLog',
-    'loginHistory',
-  ],
-  commentator: [
-    'dashboard',
-    'dataAlatBerat',
-    'formPerbaikan',
-    'kegiatanMekanik',
-    'ppa',
-  ],
-  viewer: [
-    'dashboard',
-    'dataAlatBerat',
-    'dataAlatPendukung',
-    'sewaAlatEksternal',
-    'rpa',
-    'riwayatPenggunaanAlat',
-    'formPerbaikan',
-    'stockSparepart',
-    'ppa',
-    'kegiatanMekanik',
-    'stockBBM',
-    'stockOli',
-    'timeSheet',
-  ],
+  admin: ALL_PAGES.map(p => p.key),
+  commentator: ALL_PAGES.filter(p => p.key !== 'system').map(p => p.key),
+  viewer: ALL_PAGES.filter(p => p.key !== 'system').map(p => p.key),
 };
 
 /**

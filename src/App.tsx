@@ -89,9 +89,9 @@ const App = () => {
                       <Route path="/riwayat-penggunaan-alat" element={<PageGuard pageKey="riwayatPenggunaanAlat"><RiwayatPenggunaanAlat /></PageGuard>} />
 
                       {/* Service Alat / Perbaikan routes */}
-                      <Route path="/ppa-perawatan-berkala" element={<PageGuard pageKey="ppa"><PPAPerawatanBerkala /></PageGuard>} />
-                      <Route path="/ppa-perbaikan-berkala" element={<PageGuard pageKey="ppa"><PPAPerbaikanBerkala /></PageGuard>} />
-                      <Route path="/ppa" element={<PageGuard pageKey="ppa"><PPAPerbaikanBerkala /></PageGuard>} />
+                      <Route path="/ppa-perawatan-berkala" element={<PageGuard pageKey="permohonanPerawatanBerkala"><PPAPerawatanBerkala /></PageGuard>} />
+                      <Route path="/ppa-perbaikan-berkala" element={<PageGuard pageKey="permohonanPerbaikanAlat"><PPAPerbaikanBerkala /></PageGuard>} />
+                      <Route path="/ppa" element={<PageGuard pageKey="permohonanPerbaikanAlat"><PPAPerbaikanBerkala /></PageGuard>} />
                       <Route path="/form-perbaikan" element={<PageGuard pageKey="formPerbaikan"><FormPerbaikan /></PageGuard>} />
                       <Route path="/laporan/kegiatan-mekanik" element={<PageGuard pageKey="kegiatanMekanik"><LaporanKegiatanMekanik /></PageGuard>} />
                       {/* Laporan Proyek routes */}

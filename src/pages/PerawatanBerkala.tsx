@@ -247,13 +247,19 @@ interface SPKSectionProps {
   onEditItem: (item: PerawatanBerkalaItemDetail) => void;
   onDeleteItem: (id: string) => void;
   deletingId: string | null;
+  canCreate: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+  canPrint: boolean;
 }
 
 const SPKSection = memo(({
   selectedItem, onClose, form, onChangeForm, onSubmit,
   isEditing, onCancelEdit, isSaving, items, isLoadingItems,
-  onEditItem, onDeleteItem, deletingId
+  onEditItem, onDeleteItem, deletingId,
+  canCreate, canEdit, canDelete, canPrint
 }: SPKSectionProps) => {
+  const canSubmitForm = isEditing ? canEdit : canCreate;
   const totalBiaya = useMemo(() => {
     return items.reduce((acc, it) => acc + (Number(it.total_harga) || (Number(it.quantity) * Number(it.harga)) || 0), 0);
   }, [items]);
@@ -427,7 +433,7 @@ const SPKSection = memo(({
           </div>
         </div>
         <div className="flex items-center gap-2 self-end sm:self-auto">
-          {items.length > 0 && (
+          {canPrint && items.length > 0 && (
             <Button
               type="button"
               variant="outline"
@@ -453,7 +459,7 @@ const SPKSection = memo(({
       </div>
 
       {/* Form dengan Field Tanggal, Nama Mekanik, Rencana Perawatan, Jenis Perawatan, Quantity, Harga */}
-      <form onSubmit={onSubmit} className="space-y-4" id="spkForm">
+      {canSubmitForm && <form onSubmit={onSubmit} className="space-y-4" id="spkForm">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           <div className="space-y-1.5">
             <Label htmlFor="spk_tanggal" className="text-xs font-semibold text-gray-700">
@@ -560,7 +566,7 @@ const SPKSection = memo(({
             </Button>
           )}
         </div>
-      </form>
+      </form>}
 
       {/* Tabel Item Perintah Kerja */}
       <div className="pt-2">
@@ -577,6 +583,7 @@ const SPKSection = memo(({
                 Total Biaya: Rp {totalBiaya.toLocaleString('id-ID')}
               </div>
             )}
+            {canPrint && (
             <Button
               type="button"
               variant="outline"
@@ -589,6 +596,7 @@ const SPKSection = memo(({
               <Printer className="h-3.5 w-3.5 text-blue-600" />
               <span>Cetak Hasil SPK</span>
             </Button>
+            )}
           </div>
         </div>
 
@@ -611,7 +619,7 @@ const SPKSection = memo(({
                   <th className="py-2.5 px-3 text-right">Quantity</th>
                   <th className="py-2.5 px-3 text-right">Harga Satuan</th>
                   <th className="py-2.5 px-3 text-right">Total Harga</th>
-                  <th className="py-2.5 px-3 text-center w-20">Aksi</th>
+                  {(canEdit || canDelete) && <th className="py-2.5 px-3 text-center w-20">Aksi</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -633,8 +641,10 @@ const SPKSection = memo(({
                       <td className="py-2 px-3 text-right font-bold text-gray-900 tabular-nums">
                         Rp {lineTotal.toLocaleString('id-ID')}
                       </td>
+                      {(canEdit || canDelete) && (
                       <td className="py-2 px-3 text-center">
                         <div className="flex items-center justify-center space-x-1">
+                          {canEdit && (
                           <button
                             type="button"
                             onClick={() => onEditItem(it)}
@@ -643,6 +653,8 @@ const SPKSection = memo(({
                           >
                             <Edit className="h-3.5 w-3.5" />
                           </button>
+                          )}
+                          {canDelete && (
                           <button
                             type="button"
                             onClick={() => onDeleteItem(it.id)}
@@ -656,8 +668,10 @@ const SPKSection = memo(({
                               <Trash2 className="h-3.5 w-3.5" />
                             )}
                           </button>
+                          )}
                         </div>
                       </td>
+                      )}
                     </tr>
                   );
                 })}
@@ -668,7 +682,7 @@ const SPKSection = memo(({
                   <td className="py-2.5 px-3 text-right text-blue-800 font-bold tabular-nums">
                     Rp {totalBiaya.toLocaleString('id-ID')}
                   </td>
-                  <td></td>
+                  {(canEdit || canDelete) && <td></td>}
                 </tr>
               </tfoot>
             </table>
@@ -695,8 +709,15 @@ export default function PerawatanBerkala() {
   const {
     can_create: canCreate, can_edit: canEdit, can_delete: canDelete,
     can_export_excel: canExportExcel, can_print: canPrint, can_approve: canApprove,
-  } = usePagePermission('ppa');
-  const canShowActions = canEdit || canDelete || canApprove;
+  } = usePagePermission('permohonanPerawatanBerkala');
+  const {
+    can_view: canViewSpk,
+    can_create: canCreateSpk,
+    can_edit: canEditSpk,
+    can_delete: canDeleteSpk,
+    can_print: canPrintSpk,
+  } = usePagePermission('spkPerawatanBerkala');
+  const canShowActions = canEdit || canDelete || canApprove || canViewSpk;
 
   /* ── All assets for autocomplete ─────────────────────── */
   const allAssets = useMemo<AssetItem[]>(() => {
@@ -896,7 +917,7 @@ export default function PerawatanBerkala() {
         approved_at: new Date().toISOString(),
       });
       toast({ title: 'Berhasil', description: `Data berhasil ${status === 'approved' ? 'disetujui' : 'ditolak'}` });
-      if (status === 'approved') {
+      if (status === 'approved' && canViewSpk) {
         setSelectedSPKItem({ ...current, status: 'approved' });
       }
     } catch { /* hook handles toast */ } finally {
@@ -910,6 +931,7 @@ export default function PerawatanBerkala() {
   const handleSubmitSPK = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedSPKItem) return;
+    if (editingSPKItemId ? !canEditSpk : !canCreateSpk) return;
     if (!spkForm.nama_mekanik.trim()) {
       toast({ title: 'Peringatan', description: 'Nama mekanik wajib diisi', variant: 'destructive' });
       return;
@@ -968,6 +990,7 @@ export default function PerawatanBerkala() {
   };
 
   const handleDeleteSPKItem = async (id: string) => {
+    if (!canDeleteSpk) return;
     if (!window.confirm('Hapus item perintah kerja ini?')) return;
     setDeletingSPKId(id);
     try {
@@ -1118,7 +1141,7 @@ ${data.map((item, idx) => `<tr>
         </CardHeader>
 
         <CardContent>
-          {selectedSPKItem && (
+          {selectedSPKItem && canViewSpk && (
             <SPKSection
               selectedItem={selectedSPKItem}
               onClose={() => setSelectedSPKItem(null)}
@@ -1133,6 +1156,10 @@ ${data.map((item, idx) => `<tr>
               onEditItem={handleEditSPKItem}
               onDeleteItem={handleDeleteSPKItem}
               deletingId={deletingSPKId}
+              canCreate={canCreateSpk}
+              canEdit={canEditSpk}
+              canDelete={canDeleteSpk}
+              canPrint={canPrintSpk}
             />
           )}
 
@@ -1179,7 +1206,7 @@ ${data.map((item, idx) => `<tr>
                       <TableCell>
                         <div className="flex flex-col items-start gap-1">
                           <StatusBadge status={item.status} />
-                          {item.status === 'approved' && (
+                          {item.status === 'approved' && canViewSpk && (
                             <button
                               type="button"
                               onClick={() => setSelectedSPKItem(selectedSPKItem?.id === item.id ? null : item)}
@@ -1209,7 +1236,7 @@ ${data.map((item, idx) => `<tr>
                                 </Button>
                               </>
                             )}
-                            {item.status === 'approved' && (
+                            {item.status === 'approved' && canViewSpk && (
                               <Button
                                 variant={selectedSPKItem?.id === item.id ? "default" : "outline"}
                                 size="sm"

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { ROLE_PERMISSIONS } from '@/utils/rolePermissions';
+import { ROLE_PERMISSIONS, expandPageKeys } from '@/utils/rolePermissions';
 import type { UserRole } from '@/utils/rolePermissions';
 
 const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
@@ -60,7 +60,11 @@ export function useCurrentUserViewPermissions(): {
         if (rows.length > 0) {
           // Use database permissions
           for (const row of rows) {
-            map[row.page_key] = Boolean(row.can_view);
+            const visible = Boolean(row.can_view);
+            map[row.page_key] = visible;
+            for (const key of expandPageKeys(row.page_key)) {
+              map[key] = visible;
+            }
           }
         } else {
           // Fallback: use ROLE_PERMISSIONS
