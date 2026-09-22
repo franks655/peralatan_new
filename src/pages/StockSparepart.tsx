@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import { Plus, Search, Edit, Trash, ComponentIcon, Upload, Download, Calendar, X, Printer, Boxes, Receipt, ListFilter } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useSparepart, useAddSparepart, useUpdateSparepart, useDeleteSparepart, Sparepart } from '@/hooks/useSparepart';
+import { useSparepartTransactions } from '@/hooks/useSparepartTransactions';
 import { usePagePermission } from '@/hooks/usePagePermission';
 import ExcelImportButton from '@/components/ui/ExcelImportButton';
 import { exportToExcel } from '@/utils/excelUtils';
@@ -36,6 +36,7 @@ const StockSparepart: React.FC = () => {
   const canShowActions = canEdit || canDelete;
 
   const { data: spareparts = [], isLoading } = useSparepart();
+  const { data: sparepartTransactions = [] } = useSparepartTransactions();
   const addSparepartMutation = useAddSparepart();
   const updateSparepartMutation = useUpdateSparepart();
   const deleteSparepartMutation = useDeleteSparepart();
@@ -250,6 +251,50 @@ const StockSparepart: React.FC = () => {
 
     return true;
   });
+
+  // Map sparepart_id -> nama sparepart, dipakai untuk join ke sparepart_transactions
+  // (tabel sparepart_transactions cuma nyimpan sparepart_id, bukan namanya)
+  const sparepartNameMap = React.useMemo(() => {
+    const map: Record<string, { nama: string; satuan: string }> = {};
+    spareparts.forEach(item => {
+      map[item.id] = { nama: item.namaSparepart, satuan: item.satuan };
+    });
+    return map;
+  }, [spareparts]);
+
+  // Data Pengeluaran diambil dari tabel sparepart_transactions (jenis === 'keluar'),
+  // karena inilah tabel yang benar-benar diisi saat item SPK perbaikan alat disimpan.
+  // Catatan: perhitungan stok/sisa di tab "Jumlah Per Jenis" & "Transaksi" TETAP pakai
+  // filter jenis === 'Pemakaian' dari tabel sparepart (tidak diubah).
+  const pengeluaranData = React.useMemo(() => {
+    return sparepartTransactions
+      .filter(t => t.jenis === 'keluar')
+      .map(t => {
+        const ref = sparepartNameMap[t.sparepart_id];
+        return {
+          id: t.id,
+          tanggal: t.tanggal,
+          namaSparepart: ref?.nama || t.nama_alat || '-',
+          jumlah: t.jumlah,
+          satuan: t.satuan || ref?.satuan || '-',
+          keterangan: t.keterangan || '-',
+        };
+      });
+  }, [sparepartTransactions, sparepartNameMap]);
+
+  const filteredPengeluaran = React.useMemo(() => {
+    return pengeluaranData.filter(item => {
+      const matchesSearch = !searchTerm ||
+        (item.namaSparepart && item.namaSparepart.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (item.keterangan && item.keterangan.toLowerCase().includes(searchTerm.toLowerCase()));
+      if (!matchesSearch) return false;
+
+      if (tableFilterFrom && item.tanggal && item.tanggal < tableFilterFrom) return false;
+      if (tableFilterTo && item.tanggal && item.tanggal > tableFilterTo) return false;
+
+      return true;
+    });
+  }, [pengeluaranData, searchTerm, tableFilterFrom, tableFilterTo]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value);
@@ -807,7 +852,7 @@ const StockSparepart: React.FC = () => {
           <span>Pengeluaran</span>
           <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${activeTab === 'pengeluaran' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
             }`}>
-            {filteredData.filter(t => t.jenis === 'keluar').length}
+            {filteredPengeluaran.length}
           </span>
         </button>
       </div>
@@ -1227,49 +1272,22 @@ const StockSparepart: React.FC = () => {
                   <th>Jumlah</th>
                   <th>Satuan</th>
                   <th>Keterangan</th>
-                  {canShowActions && <th className="print:hidden">Aksi</th>}
                 </tr>
               </thead>
               <tbody>
-                {filteredData.filter(t => t.jenis === 'keluar').length > 0 ? (
-                  paginateData(filteredData.filter(t => t.jenis === 'keluar'), currentPage, pageSize).map((item) => (
+                {filteredPengeluaran.length > 0 ? (
+                  paginateData(filteredPengeluaran, currentPage, pageSize).map((item) => (
                     <tr key={item.id}>
                       <td>{item.tanggal ? formatDateDisplay(item.tanggal) : '-'}</td>
                       <td>{item.namaSparepart}</td>
                       <td>{(item.jumlah || 0).toLocaleString('id-ID')}</td>
                       <td>{item.satuan || '-'}</td>
                       <td>{item.keterangan || '-'}</td>
-                      {canShowActions && (
-                        <td className="print:hidden">
-                          <div className="flex gap-2">
-                            {canEdit && (
-                              <button
-                                onClick={() => handleEdit(item)}
-                                className="p-1 text-blue-600 hover:text-blue-800"
-                                disabled={updateSparepartMutation.isPending}
-                                title="Edit Transaksi"
-                              >
-                                <Edit size={18} />
-                              </button>
-                            )}
-                            {canDelete && (
-                              <button
-                                onClick={() => handleDelete(item.id)}
-                                className="p-1 text-red-600 hover:text-red-800"
-                                disabled={deleteSparepartMutation.isPending}
-                                title="Hapus Transaksi"
-                              >
-                                <Trash size={18} />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      )}
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={canShowActions ? 6 : 5} className="text-center py-4">
+                    <td colSpan={5} className="text-center py-4">
                       {searchTerm ? 'Tidak ada data pengeluaran yang sesuai dengan pencarian' : 'Belum ada data pengeluaran tersimpan'}
                     </td>
                   </tr>
@@ -1277,14 +1295,14 @@ const StockSparepart: React.FC = () => {
               </tbody>
             </table>
           </TableScrollWrapper>
-          {filteredData.filter(t => t.jenis === 'keluar').length > 0 && (
+          {filteredPengeluaran.length > 0 && (
             <SimplePagination
               currentPage={currentPage}
-              totalPages={getTotalPages(filteredData.filter(t => t.jenis === 'keluar').length, pageSize)}
+              totalPages={getTotalPages(filteredPengeluaran.length, pageSize)}
               onPageChange={setCurrentPage}
               pageSize={pageSize}
               onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
-              totalItems={filteredData.filter(t => t.jenis === 'keluar').length}
+              totalItems={filteredPengeluaran.length}
             />
           )}
         </div>
