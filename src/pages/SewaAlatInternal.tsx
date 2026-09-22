@@ -20,9 +20,10 @@ import {
   DialogDescription,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, FileText } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { useSewaAlatInternal, useAddSewaAlatInternal, useUpdateSewaAlatInternal, useDeleteSewaAlatInternal } from '../hooks/useSewaAlatInternal';
+import { SuratJalanDialog } from '../components/dialogs/SuratJalanDialog';
 import { useToast } from '@/components/ui/use-toast';
 import { usePagePermission } from '@/hooks/usePagePermission';
 import { SimplePagination, paginateData, getTotalPages } from '@/components/ui/SimplePagination';
@@ -89,6 +90,15 @@ export default function SewaAlatInternal() {
 
   // State untuk edit mode
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  // State untuk dialog Surat Jalan
+  const [isSuratJalanOpen, setIsSuratJalanOpen] = useState(false);
+  const [suratJalanTarget, setSuratJalanTarget] = useState<SewaAlat | null>(null);
+
+  const handleOpenSuratJalan = (sewaAlat: SewaAlat) => {
+    setSuratJalanTarget(sewaAlat);
+    setIsSuratJalanOpen(true);
+  };
 
   const handleEdit = (sewaAlat: SewaAlat) => {
     if (!sewaAlat.id) return;
@@ -847,7 +857,7 @@ export default function SewaAlatInternal() {
                 <TableHead className="whitespace-nowrap">Uang Makan</TableHead>
                 <TableHead className="whitespace-nowrap">Total</TableHead>
                 <TableHead className="whitespace-nowrap">Status</TableHead>
-                {canShowActions && <TableHead className="w-[100px] whitespace-nowrap text-right">Aksi</TableHead>}
+                {canShowActions && <TableHead className="w-[220px] whitespace-nowrap text-right">Aksi</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -886,6 +896,15 @@ export default function SewaAlatInternal() {
                     {canShowActions && (
                       <TableCell className="whitespace-nowrap">
                         <div className="flex items-center justify-end space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenSuratJalan(sewaAlat)}
+                            className="h-8 gap-1.5 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border-indigo-200"
+                          >
+                            <FileText className="h-4 w-4" />
+                            <span>Surat Jalan</span>
+                          </Button>
                           {canEdit && (
                             <Button
                               variant="outline"
@@ -926,6 +945,15 @@ export default function SewaAlatInternal() {
           />
         )}
       </div>
+
+      <SuratJalanDialog
+        open={isSuratJalanOpen}
+        onClose={() => {
+          setIsSuratJalanOpen(false);
+          setSuratJalanTarget(null);
+        }}
+        sewaAlat={suratJalanTarget}
+      />
     </div>
   );
 }
