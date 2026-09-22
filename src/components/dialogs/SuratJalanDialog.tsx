@@ -58,6 +58,7 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
   });
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [savedForm, setSavedForm] = useState<SuratJalan | null>(null);
 
   // Prefill setiap kali dialog dibuka untuk sewa alat tertentu
   useEffect(() => {
@@ -65,6 +66,7 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
 
     if (existing) {
       setForm(existing);
+      setSavedForm(existing);
       setHasUnsavedChanges(false);
     } else {
       const newForm = {
@@ -80,6 +82,7 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
         yang_menyerahkan_nama: '',
       };
       setForm(newForm);
+      setSavedForm(null);
       setHasUnsavedChanges(false);
     }
   }, [open, sewaAlat, existing]);
@@ -132,9 +135,11 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
     try {
       if (form.id) {
         await updateSuratJalan.mutateAsync(form);
+        setSavedForm(form);
       } else {
         const saved = await addSuratJalan.mutateAsync(form);
         setForm(saved);
+        setSavedForm(saved);
       }
       setHasUnsavedChanges(false);
     } catch (error) {
@@ -143,8 +148,10 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
   };
 
   const handlePrint = () => {
+    const formToPrint = hasUnsavedChanges && savedForm ? savedForm : form;
+
     if (hasUnsavedChanges) {
-      if (!confirm('Data belum disimpan. Apakah Anda yakin ingin mencetak? Data yang dicetak adalah data terbaru yang belum disimpan.')) {
+      if (!confirm('Data belum disimpan. Apakah Anda yakin ingin mencetak? Data yang dicetak adalah data yang sudah disimpan.')) {
         return;
       }
     }
@@ -159,13 +166,13 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
       return;
     }
 
-    const tanggalText = form.tanggal
-      ? new Date(form.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+    const tanggalText = formToPrint.tanggal
+      ? new Date(formToPrint.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
       : '-';
 
-    const rowsNeeded = Math.max(form.items.length, 6);
+    const rowsNeeded = Math.max(formToPrint.items.length, 6);
     const itemRows = Array.from({ length: rowsNeeded }).map((_, i) => {
-      const it = form.items[i];
+      const it = formToPrint.items[i];
       return `
         <tr>
           <td class="center">${it ? i + 1 : ''}</td>
@@ -180,7 +187,7 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Surat Jalan ${form.nomor || ''}</title>
+          <title>Surat Jalan ${formToPrint.nomor || ''}</title>
           <style>
             @page { size: A4; margin: 1.2cm; }
             * { box-sizing: border-box; }
@@ -224,7 +231,7 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
               <div class="company-address">Jl. Pangkalan No. 31 RT. 003/RW. 001, Kel. Bantargebang, Kec. Bantar Gebang, Kota Bekasi 17151</div>
             </div>
               <div class="doc-meta">
-                <div><strong>Nomor</strong> : ${form.nomor || '-'}</div>
+                <div><strong>Nomor</strong> : ${formToPrint.nomor || '-'}</div>
                 <div><strong>Tanggal</strong> : ${tanggalText}</div>
               </div>
             </div>
@@ -233,8 +240,8 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
           <div class="title">Tanda Pengeluaran Barang / Alat di Proyek</div>
 
           <div class="proyek-grid">
-            <div class="proyek-row"><span class="proyek-label">Dari Proyek :</span><span class="proyek-val">${form.dari_proyek || '-'}</span></div>
-            <div class="proyek-row"><span class="proyek-label">Untuk Proyek :</span><span class="proyek-val">${form.untuk_proyek || '-'}</span></div>
+            <div class="proyek-row"><span class="proyek-label">Dari Proyek :</span><span class="proyek-val">${formToPrint.dari_proyek || '-'}</span></div>
+            <div class="proyek-row"><span class="proyek-label">Untuk Proyek :</span><span class="proyek-val">${formToPrint.untuk_proyek || '-'}</span></div>
           </div>
 
           <table>
@@ -255,21 +262,21 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
             <div class="sig-box">
               <div class="sig-title">Mengetahui,</div>
               <div>
-                <div class="sig-line">${form.mengetahui_nama || '&nbsp;'}</div>
+                <div class="sig-line">${formToPrint.mengetahui_nama || '&nbsp;'}</div>
                 <div class="sig-role">( Site Manager )</div>
               </div>
             </div>
             <div class="sig-box">
               <div class="sig-title">Yang Menerima,</div>
               <div>
-                <div class="sig-line">${form.yang_menerima_nama || '&nbsp;'}</div>
+                <div class="sig-line">${formToPrint.yang_menerima_nama || '&nbsp;'}</div>
                 <div class="sig-role">( Sopir )</div>
               </div>
             </div>
             <div class="sig-box">
               <div class="sig-title">Yang Menyerahkan,</div>
               <div>
-                <div class="sig-line">${form.yang_menyerahkan_nama || '&nbsp;'}</div>
+                <div class="sig-line">${formToPrint.yang_menyerahkan_nama || '&nbsp;'}</div>
                 <div class="sig-role">( Logistik )</div>
               </div>
             </div>

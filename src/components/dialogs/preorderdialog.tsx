@@ -54,6 +54,7 @@ export function PreOrderDialog({ open, onClose, sewaAlat }: PreOrderDialogProps)
   });
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [savedForm, setSavedForm] = useState<PreOrder | null>(null);
 
   // Prefill setiap kali dialog dibuka untuk sewa alat eksternal tertentu
   useEffect(() => {
@@ -61,6 +62,7 @@ export function PreOrderDialog({ open, onClose, sewaAlat }: PreOrderDialogProps)
 
     if (existing) {
       setForm(existing);
+      setSavedForm(existing);
       setHasUnsavedChanges(false);
     } else {
       const newForm = {
@@ -72,6 +74,7 @@ export function PreOrderDialog({ open, onClose, sewaAlat }: PreOrderDialogProps)
         items: [{ nama_barang: sewaAlat.nama_alat || '', volume: '1', estimasi_harga_satuan: '', keterangan: '' }],
       };
       setForm(newForm);
+      setSavedForm(null);
       setHasUnsavedChanges(false);
     }
   }, [open, sewaAlat, existing]);
@@ -124,9 +127,11 @@ export function PreOrderDialog({ open, onClose, sewaAlat }: PreOrderDialogProps)
     try {
       if (form.id) {
         await updatePreOrder.mutateAsync(form);
+        setSavedForm(form);
       } else {
         const saved = await addPreOrder.mutateAsync(form);
         setForm(saved);
+        setSavedForm(saved);
       }
       setHasUnsavedChanges(false);
     } catch (error) {
@@ -135,8 +140,10 @@ export function PreOrderDialog({ open, onClose, sewaAlat }: PreOrderDialogProps)
   };
 
   const handlePrint = () => {
+    const formToPrint = hasUnsavedChanges && savedForm ? savedForm : form;
+
     if (hasUnsavedChanges) {
-      if (!confirm('Data belum disimpan. Apakah Anda yakin ingin mencetak? Data yang dicetak adalah data terbaru yang belum disimpan.')) {
+      if (!confirm('Data belum disimpan. Apakah Anda yakin ingin mencetak? Data yang dicetak adalah data yang sudah disimpan.')) {
         return;
       }
     }
@@ -151,13 +158,13 @@ export function PreOrderDialog({ open, onClose, sewaAlat }: PreOrderDialogProps)
       return;
     }
 
-    const tanggalText = form.tanggal
-      ? new Date(form.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+    const tanggalText = formToPrint.tanggal
+      ? new Date(formToPrint.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
       : '-';
 
-    const rowsNeeded = Math.max(form.items.length, 10);
+    const rowsNeeded = Math.max(formToPrint.items.length, 10);
     const itemRows = Array.from({ length: rowsNeeded }).map((_, i) => {
-      const it = form.items[i];
+      const it = formToPrint.items[i];
       return `
         <tr>
           <td class="center">${it ? i + 1 : ''}</td>
@@ -173,7 +180,7 @@ export function PreOrderDialog({ open, onClose, sewaAlat }: PreOrderDialogProps)
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Pre-Order ${form.nomor_urut || ''}</title>
+          <title>Pre-Order ${formToPrint.nomor_urut || ''}</title>
           <style>
             @page { size: A4; margin: 1.2cm; }
             * { box-sizing: border-box; }
@@ -218,16 +225,16 @@ export function PreOrderDialog({ open, onClose, sewaAlat }: PreOrderDialogProps)
               <div class="company-address">Jl. Pangkalan No. 31 RT. 003/RW. 001, Kel. Bantargebang, Kec. Bantar Gebang, Kota Bekasi 17151</div>
             </div>
             <div class="doc-meta">
-              <div><span class="lbl">Nomor Urut</span> : ${form.nomor_urut || '-'}</div>
+              <div><span class="lbl">Nomor Urut</span> : ${formToPrint.nomor_urut || '-'}</div>
               <div><span class="lbl">Tanggal</span> : ${tanggalText}</div>
-              <div><span class="lbl">Kode PI</span> : ${form.kode_pi || '-'}</div>
+              <div><span class="lbl">Kode PI</span> : ${formToPrint.kode_pi || '-'}</div>
             </div>
           </div>
 
           <div class="title">Order Material, Alat dan Lain-lain</div>
 
           <div class="pekerjaan-row">
-            <span class="pekerjaan-label">Pekerjaan :</span><span class="pekerjaan-val">${form.pekerjaan || '-'}</span>
+            <span class="pekerjaan-label">Pekerjaan :</span><span class="pekerjaan-val">${formToPrint.pekerjaan || '-'}</span>
           </div>
 
           <table>
