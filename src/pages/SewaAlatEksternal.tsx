@@ -319,19 +319,35 @@ export default function SewaAlatEksternal() {
                 color: #333;
               }
               .header {
-                text-align: left;
+                display: flex;
+                align-items: center;
+                gap: 12px;
                 margin-bottom: 20px;
                 border-bottom: 2px solid #000;
                 padding-bottom: 10px;
+              }
+              .company-logo {
+                width: 50px;
+                height: 50px;
+                object-fit: contain;
+              }
+              .company-info {
+                flex: 1;
               }
               .company-name {
                 font-weight: bold;
                 font-size: 14px;
                 margin-bottom: 2px;
+                color: #1e3a8a;
               }
               .company-division {
                 font-size: 12px;
-                margin-bottom: 15px;
+                color: #4b5563;
+                margin-bottom: 2px;
+              }
+              .company-address {
+                font-size: 10px;
+                color: #64748b;
               }
               .title-section {
                 text-align: center;
@@ -393,8 +409,12 @@ export default function SewaAlatEksternal() {
           </head>
           <body>
             <div class="header">
-              <div class="company-name">PT. REKA UTAMA PERSADA</div>
-              <div class="company-division">Peralatan</div>
+              <img src="${import.meta.env.VITE_API_URL}/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
+              <div class="company-info">
+                <div class="company-name">PT. REKA UTAMA PERSADA</div>
+                <div class="company-division">Divisi Peralatan & Logistik</div>
+                <div class="company-address">Jl. Pangkalan No. 31 RT. 003/RW. 001, Kel. Bantargebang, Kec. Bantar Gebang, Kota Bekasi 17151</div>
+              </div>
             </div>
             <div class="title-section">
               <h1>Data Sewa Alat Eksternal</h1>

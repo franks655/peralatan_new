@@ -745,9 +745,12 @@ const FormPerbaikan: React.FC = () => {
       <style>
         @page { size: A4 landscape; margin: 1cm; }
         body { font-family: Arial, sans-serif; padding: 20px; font-size: 12px; }
-        .header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-        .company-name { font-weight: bold; font-size: 14px; }
-        .company-division { font-size: 12px; margin-bottom: 10px; }
+        .header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+        .company-logo { width: 50px; height: 50px; object-fit: contain; }
+        .company-info { flex: 1; }
+        .company-name { font-weight: bold; font-size: 14px; color: #1e3a8a; }
+        .company-division { font-size: 12px; color: #4b5563; margin-bottom: 2px; }
+        .company-address { font-size: 10px; color: #64748b; }
         h1 { color: #1a365d; text-align: center; font-size: 18px; margin-bottom: 5px; }
         .print-date { text-align: center; color: #666; margin-bottom: 10px; font-size: 11px; }
         .print-periode { text-align: center; font-weight: bold; margin-bottom: 16px; font-size: 13px; }
@@ -755,7 +758,14 @@ const FormPerbaikan: React.FC = () => {
         th, td { border: 1px solid #000; padding: 6px 8px; text-align: left; vertical-align: top; }
         th { background-color: #f2f2f2; font-weight: bold; text-align: center; }
       </style></head><body>
-        <div class="header"><div class="company-name">PT. REKA UTAMA PERSADA</div><div class="company-division">Peralatan</div></div>
+        <div class="header">
+          <img src="${import.meta.env.VITE_API_URL}/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
+          <div class="company-info">
+            <div class="company-name">PT. REKA UTAMA PERSADA</div>
+            <div class="company-division">Divisi Peralatan & Logistik</div>
+            <div class="company-address">Jl. Pangkalan No. 31 RT. 003/RW. 001, Kel. Bantargebang, Kec. Bantar Gebang, Kota Bekasi 17151</div>
+          </div>
+        </div>
         <h1>DAFTAR PERBAIKAN ALAT</h1>
         ${periodeLabel ? `<div class="print-periode">${periodeLabel}</div>` : ''}
         <div class="print-date">Dicetak pada: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
@@ -791,9 +801,12 @@ const FormPerbaikan: React.FC = () => {
             <style>
               @page { size: A4 portrait; margin: 1cm; }
               body { font-family: Arial, sans-serif; padding: 20px; font-size: 12px; }
-              .header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-              .company-name { font-weight: bold; font-size: 14px; }
-              .company-division { font-size: 12px; margin-bottom: 10px; }
+              .header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+              .company-logo { width: 50px; height: 50px; object-fit: contain; }
+              .company-info { flex: 1; }
+              .company-name { font-weight: bold; font-size: 14px; color: #1e3a8a; }
+              .company-division { font-size: 12px; color: #4b5563; margin-bottom: 2px; }
+              .company-address { font-size: 10px; color: #64748b; }
               h1 { color: #1a365d; text-align: center; font-size: 18px; margin-bottom: 5px; }
               .print-date { text-align: center; color: #666; margin-bottom: 20px; font-size: 11px; }
               
@@ -810,8 +823,12 @@ const FormPerbaikan: React.FC = () => {
           </head>
           <body>
             <div class="header">
-              <div class="company-name">PT. REKA UTAMA PERSADA</div>
-              <div class="company-division">Peralatan</div>
+              <img src="${import.meta.env.VITE_API_URL}/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
+              <div class="company-info">
+                <div class="company-name">PT. REKA UTAMA PERSADA</div>
+                <div class="company-division">Divisi Peralatan & Logistik</div>
+                <div class="company-address">Jl. Pangkalan No. 31 RT. 003/RW. 001, Kel. Bantargebang, Kec. Bantar Gebang, Kota Bekasi 17151</div>
+              </div>
             </div>
             <h1>LAPORAN PERBAIKAN ALAT</h1>
             <div class="print-date">Dicetak pada: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>

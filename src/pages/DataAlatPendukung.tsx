@@ -241,19 +241,35 @@ const DataAlatPendukung = () => {
                 color: #333;
               }
               .header {
-                text-align: left;
+                display: flex;
+                align-items: center;
+                gap: 12px;
                 margin-bottom: 20px;
                 border-bottom: 2px solid #000;
                 padding-bottom: 10px;
+              }
+              .company-logo {
+                width: 50px;
+                height: 50px;
+                object-fit: contain;
+              }
+              .company-info {
+                flex: 1;
               }
               .company-name {
                 font-weight: bold;
                 font-size: 14px;
                 margin-bottom: 2px;
+                color: #1e3a8a;
               }
               .company-division {
                 font-size: 12px;
-                margin-bottom: 15px;
+                color: #4b5563;
+                margin-bottom: 2px;
+              }
+              .company-address {
+                font-size: 10px;
+                color: #64748b;
               }
               .title-section {
                 text-align: center;
@@ -310,8 +326,12 @@ const DataAlatPendukung = () => {
           </head>
           <body>
             <div class="header">
-              <div class="company-name">IPTA PERDANA</div>
-              <div class="company-division">Divisi Infrastruktur - Peralatan</div>
+              <img src="${import.meta.env.VITE_API_URL}/images/logo.png" alt="IPTA PERDANA" class="company-logo" onerror="this.style.display='none'" />
+              <div class="company-info">
+                <div class="company-name">IPTA PERDANA</div>
+                <div class="company-division">Divisi Infrastruktur - Peralatan</div>
+                <div class="company-address">Jl. Pangkalan No. 31 RT. 003/RW. 001, Kel. Bantargebang, Kec. Bantar Gebang, Kota Bekasi 17151</div>
+              </div>
             </div>
             <div class="title-section">
               <h1>Data Alat Pendukung</h1>
