@@ -83,19 +83,25 @@ export const useAddSparepartTransaction = () => {
   
   return useMutation({
     mutationFn: async (data: Omit<SparepartTransaction, 'id' | 'created_at' | 'updated_at'>) => {
+      const insertData: any = {
+        sparepart_id: data.sparepart_id,
+        tanggal: data.tanggal || new Date().toISOString(),
+        jenis: data.jenis,
+        jumlah: data.jumlah,
+        satuan: data.satuan || null,
+        no_lambung: data.no_lambung || null,
+        keterangan: data.keterangan || null,
+      };
+
+      // Only include optional fields if they have values
+      if (data.nama_alat) insertData.nama_alat = data.nama_alat;
+      if (data.no_perbaikan) insertData.no_perbaikan = data.no_perbaikan;
+
+      console.log('Inserting transaction with data:', insertData);
+
       const { error } = await supabase
         .from('sparepart_transactions')
-        .insert({
-          sparepart_id: data.sparepart_id,
-          tanggal: data.tanggal || new Date().toISOString(),
-          jenis: data.jenis,
-          jumlah: data.jumlah,
-          satuan: data.satuan || null,
-          no_lambung: data.no_lambung || null,
-          nama_alat: data.nama_alat || null,
-          no_perbaikan: data.no_perbaikan || null,
-          keterangan: data.keterangan || null,
-        });
+        .insert(insertData);
       
       if (error) {
         console.error('Sparepart Transaction Insert Error:', error);

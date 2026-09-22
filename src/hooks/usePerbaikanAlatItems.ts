@@ -121,16 +121,22 @@ export const useAddPerbaikanAlatItem = () => {
       console.log('Adding SPK item:', item.nama_sparepart, 'Excluded service:', isExcludedService);
 
       // Get perbaikan_alat data for transaction context
-      const { data: perbaikanAlat, error: perbaikanError } = await supabase
-        .from('perbaikan_alat')
-        .select('no_lambung, nama_alat, no_perbaikan')
-        .eq('id', item.perbaikan_alat_id)
-        .single();
-
-      if (perbaikanError) {
-        console.error('Error fetching perbaikan_alat:', perbaikanError);
-      } else {
-        console.log('Perbaikan Alat data:', perbaikanAlat);
+      let perbaikanAlat = null;
+      try {
+        const result = await supabase
+          .from('perbaikan_alat')
+          .select('no_lambung, nama_alat, no_perbaikan')
+          .eq('id', item.perbaikan_alat_id)
+          .single();
+        
+        if (result.error) {
+          console.error('Error fetching perbaikan_alat:', result.error);
+        } else {
+          perbaikanAlat = result.data;
+          console.log('Perbaikan Alat data:', perbaikanAlat);
+        }
+      } catch (fetchError) {
+        console.error('Exception fetching perbaikan_alat:', fetchError);
       }
 
       // Find sparepart and update stock if not excluded service
@@ -157,8 +163,6 @@ export const useAddPerbaikanAlatItem = () => {
                 jumlah: quantity,
                 satuan: sparepart.satuan || '',
                 no_lambung: perbaikanAlat?.no_lambung || '',
-                nama_alat: perbaikanAlat?.nama_alat || '',
-                no_perbaikan: perbaikanAlat?.no_perbaikan || '',
                 keterangan: `Pemakaian untuk SPK Perbaikan Alat`,
               });
               console.log('Transaction created successfully');
