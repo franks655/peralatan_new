@@ -25,18 +25,51 @@ const EXCLUDED_SERVICE_TYPES = ['service jasa ringan', 'service jasa berat'];
 
 // Helper function to find sparepart by name
 const findSparepartByName = async (namaSparepart: string) => {
-  const { data, error } = await supabase
+  console.log('Searching for sparepart with name:', namaSparepart);
+  
+  // Try exact match first
+  const { data: exactMatch, error: exactError } = await supabase
+    .from('sparepart')
+    .select('*')
+    .eq('nama_sparepart', namaSparepart)
+    .single();
+
+  if (!exactError && exactMatch) {
+    console.log('Found exact match:', exactMatch);
+    return exactMatch;
+  }
+
+  console.log('No exact match, trying case-insensitive search');
+  
+  // Try case-insensitive match
+  const { data: caseMatch, error: caseError } = await supabase
     .from('sparepart')
     .select('*')
     .ilike('nama_sparepart', namaSparepart)
     .single();
 
-  if (error) {
-    console.error('Error finding sparepart:', error);
-    return null;
+  if (!caseError && caseMatch) {
+    console.log('Found case-insensitive match:', caseMatch);
+    return caseMatch;
   }
 
-  return data;
+  console.log('No case-insensitive match, trying partial match');
+  
+  // Try partial match (contains)
+  const { data: partialMatch, error: partialError } = await supabase
+    .from('sparepart')
+    .select('*')
+    .ilike('nama_sparepart', `%${namaSparepart}%`)
+    .limit(1);
+
+  if (!partialError && partialMatch && partialMatch.length > 0) {
+    console.log('Found partial match:', partialMatch[0]);
+    return partialMatch[0];
+  }
+
+  console.error('No sparepart found for:', namaSparepart);
+  console.log('Errors - Exact:', exactError, 'Case:', caseError, 'Partial:', partialError);
+  return null;
 };
 
 // Helper function to update sparepart stock
