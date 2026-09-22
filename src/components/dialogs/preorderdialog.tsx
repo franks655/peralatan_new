@@ -54,7 +54,6 @@ export function PreOrderDialog({ open, onClose, sewaAlat }: PreOrderDialogProps)
   });
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [originalForm, setOriginalForm] = useState<PreOrder | null>(null);
 
   // Prefill setiap kali dialog dibuka untuk sewa alat eksternal tertentu
   useEffect(() => {
@@ -62,7 +61,6 @@ export function PreOrderDialog({ open, onClose, sewaAlat }: PreOrderDialogProps)
 
     if (existing) {
       setForm(existing);
-      setOriginalForm(existing);
       setHasUnsavedChanges(false);
     } else {
       const newForm = {
@@ -74,7 +72,6 @@ export function PreOrderDialog({ open, onClose, sewaAlat }: PreOrderDialogProps)
         items: [{ nama_barang: sewaAlat.nama_alat || '', volume: '1', estimasi_harga_satuan: '', keterangan: '' }],
       };
       setForm(newForm);
-      setOriginalForm(newForm);
       setHasUnsavedChanges(false);
     }
   }, [open, sewaAlat, existing]);
@@ -130,7 +127,6 @@ export function PreOrderDialog({ open, onClose, sewaAlat }: PreOrderDialogProps)
       } else {
         const saved = await addPreOrder.mutateAsync(form);
         setForm(saved);
-        setOriginalForm(saved);
       }
       setHasUnsavedChanges(false);
     } catch (error) {

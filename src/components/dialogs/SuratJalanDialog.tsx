@@ -58,7 +58,6 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
   });
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [originalForm, setOriginalForm] = useState<SuratJalan | null>(null);
 
   // Prefill setiap kali dialog dibuka untuk sewa alat tertentu
   useEffect(() => {
@@ -66,7 +65,6 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
 
     if (existing) {
       setForm(existing);
-      setOriginalForm(existing);
       setHasUnsavedChanges(false);
     } else {
       const newForm = {
@@ -82,7 +80,6 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
         yang_menyerahkan_nama: '',
       };
       setForm(newForm);
-      setOriginalForm(newForm);
       setHasUnsavedChanges(false);
     }
   }, [open, sewaAlat, existing]);
@@ -138,7 +135,6 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
       } else {
         const saved = await addSuratJalan.mutateAsync(form);
         setForm(saved);
-        setOriginalForm(saved);
       }
       setHasUnsavedChanges(false);
     } catch (error) {
