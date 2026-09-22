@@ -143,7 +143,7 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
   };
 
   const handlePrint = () => {
-    if (hasUnsavedChanges && !form.id) {
+    if (hasUnsavedChanges) {
       if (!confirm('Data belum disimpan. Apakah Anda yakin ingin mencetak? Data yang dicetak adalah data terbaru yang belum disimpan.')) {
         return;
       }
@@ -411,7 +411,7 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
                   <Printer className="h-4 w-4 mr-2" /> Cetak
                 </Button>
               </div>
-              {hasUnsavedChanges && !form.id && (
+              {hasUnsavedChanges && (
                 <p className="text-xs text-muted-foreground text-center">
                   Data belum disimpan. Tombol Cetak akan menampilkan konfirmasi sebelum mencetak.
                 </p>
