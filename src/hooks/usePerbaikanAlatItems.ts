@@ -120,25 +120,6 @@ export const useAddPerbaikanAlatItem = () => {
 
       console.log('Adding SPK item:', item.nama_sparepart, 'Excluded service:', isExcludedService);
 
-      // Get perbaikan_alat data for transaction context
-      let perbaikanAlat = null;
-      try {
-        const result = await supabase
-          .from('perbaikan_alat')
-          .select('no_lambung, nama_alat, no_perbaikan')
-          .eq('id', item.perbaikan_alat_id)
-          .single();
-        
-        if (result.error) {
-          console.error('Error fetching perbaikan_alat:', result.error);
-        } else {
-          perbaikanAlat = result.data;
-          console.log('Perbaikan Alat data:', perbaikanAlat);
-        }
-      } catch (fetchError) {
-        console.error('Exception fetching perbaikan_alat:', fetchError);
-      }
-
       // Find sparepart and update stock if not excluded service
       if (!isExcludedService) {
         console.log('Finding sparepart:', item.nama_sparepart);
@@ -154,7 +135,7 @@ export const useAddPerbaikanAlatItem = () => {
             const newStock = await updateSparepartStock(sparepart.id, quantity);
             console.log('Stock updated successfully. New stock:', newStock);
 
-            // Create transaction record
+            // Create transaction record (without perbaikan context for now to avoid errors)
             try {
               await addTransaction.mutateAsync({
                 sparepart_id: sparepart.id,
@@ -162,7 +143,6 @@ export const useAddPerbaikanAlatItem = () => {
                 jenis: 'keluar',
                 jumlah: quantity,
                 satuan: sparepart.satuan || '',
-                no_lambung: perbaikanAlat?.no_lambung || '',
                 keterangan: `Pemakaian untuk SPK Perbaikan Alat`,
               });
               console.log('Transaction created successfully');
