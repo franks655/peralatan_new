@@ -39,9 +39,13 @@ const PrintableOilStock: React.FC<PrintableOilStockProps> = ({ transactions, oil
           body { print-color-adjust: exact; -webkit-print-color-adjust: exact; font-size: 11px; padding: 0; margin: 0; }
         }
       `}</style>
-      <div className="mb-4 pb-2 border-b-2 border-gray-900" style={{ width: '100%' }}>
-        <div className="font-bold text-sm">PT. REKA UTAMA PERSADA</div>
-        <div className="text-xs text-gray-600">Peralatan</div>
+      <div className="mb-4 pb-2 border-b-2 border-gray-900 flex items-center gap-3" style={{ width: '100%' }}>
+        <img src={`${import.meta.env.VITE_API_URL}/images/logo.png`} alt="PT. REKA UTAMA PERSADA" style={{ width: '50px', height: '50px', objectFit: 'contain' }} onError="this.style.display='none'" />
+        <div className="flex-1">
+          <div className="font-bold text-sm text-blue-900">PT. REKA UTAMA PERSADA</div>
+          <div className="text-xs text-gray-600">Divisi Peralatan & Logistik</div>
+          <div className="text-xs text-gray-500">Jl. Pangkalan No. 31 RT. 003/RW. 001, Kel. Bantargebang, Kec. Bantar Gebang, Kota Bekasi 17151</div>
+        </div>
       </div>
       <div className="mb-4 text-center">
         <h1 className="text-base font-bold text-blue-900 mb-1">DAFTAR TRANSAKSI STOCK {oilType.toUpperCase()}</h1>

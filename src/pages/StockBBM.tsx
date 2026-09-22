@@ -598,9 +598,12 @@ const StockBBM = () => {
               * { box-sizing: border-box; }
               body { font-family: Arial, sans-serif; padding: 15px; font-size: 11px; color: #111; }
               .print-container { width: 100%; margin: 0 auto; }
-              .header { border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 16px; width: 100%; }
-              .company-name { font-weight: bold; font-size: 14px; }
-              .company-division { font-size: 12px; }
+              .header { border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 16px; width: 100%; display: flex; align-items: center; gap: 12px; }
+              .company-logo { width: 50px; height: 50px; object-fit: contain; }
+              .company-info { flex: 1; }
+              .company-name { font-weight: bold; font-size: 14px; color: #1e3a8a; }
+              .company-division { font-size: 12px; color: #4b5563; }
+              .company-address { font-size: 10px; color: #64748b; margin-top: 2px; }
               h1 { color: #1a365d; text-align: center; font-size: 16px; margin: 0 0 4px 0; }
               .print-date { text-align: center; color: #555; margin-bottom: 4px; font-size: 10px; }
               .print-periode { text-align: center; color: #222; margin-bottom: 14px; font-size: 11px; font-weight: bold; }
@@ -616,6 +619,13 @@ const StockBBM = () => {
           <body>
             <div class="print-container">
               <div class="header">
+                <img src="${import.meta.env.VITE_API_URL}/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
+                <div class="company-info">
+                  <div class="company-name">PT. REKA UTAMA PERSADA</div>
+                  <div class="company-division">Divisi Peralatan & Logistik</div>
+                  <div class="company-address">Jl. Pangkalan No. 31 RT. 003/RW. 001, Kel. Bantargebang, Kec. Bantar Gebang, Kota Bekasi 17151</div>
+                </div>
+              </div>
                 <div class="company-name">PT. REKA UTAMA PERSADA</div>
                 <div class="company-division">Peralatan</div>
               </div>
@@ -737,9 +747,16 @@ const StockBBM = () => {
       <td style="border:1px solid #ddd;padding:6px">${item.keterangan || '-'}</td>
     </tr>`).join('');
     w.document.write(`<!DOCTYPE html><html><head><title>Stock BBM</title>
-    <style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse;font-size:12px}
+    <style>body{font-family:Arial;padding:20px}.header{display:flex;align-items:center;gap:12px;margin-bottom:20px}.company-logo{width:50px;height:50px;object-fit:contain}.company-info{flex:1}.company-name{font-weight:bold;font-size:14px;color:#1e3a8a}.company-division{font-size:12px;color:#4b5563}.company-address{font-size:10px;color:#64748b;margin-top:2px}table{width:100%;border-collapse:collapse;font-size:12px}
     th{background:#1e40af;color:#fff;padding:8px;border:1px solid #ddd}</style></head><body>
-    <b>PT. REKA UTAMA PERSADA</b><br><small>Peralatan</small>
+    <div class="header">
+      <img src="${import.meta.env.VITE_API_URL}/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
+      <div class="company-info">
+        <div class="company-name">PT. REKA UTAMA PERSADA</div>
+        <div class="company-division">Divisi Peralatan & Logistik</div>
+        <div class="company-address">Jl. Pangkalan No. 31 RT. 003/RW. 001, Kel. Bantargebang, Kec. Bantar Gebang, Kota Bekasi 17151</div>
+      </div>
+    </div>
     <h2 style="text-align:center">Stock BBM</h2>
     <p style="text-align:center;font-size:11px;color:#666">Dicetak: ${date}</p>
     <table><thead><tr><th>No</th><th>Jenis BBM</th><th>Jumlah</th><th>Satuan</th><th>Harga Satuan</th><th>Total Nilai</th><th>Keterangan</th></tr></thead>

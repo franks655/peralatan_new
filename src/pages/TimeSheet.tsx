@@ -877,9 +877,12 @@ const TimeSheet: FC = () => {
       <style>
         @page { size: landscape; margin: 1cm; }
         body { font-family: Arial, sans-serif; padding: 20px; font-size: 11px; }
-        .header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-        .company-name { font-weight: bold; font-size: 14px; }
-        .company-division { font-size: 12px; }
+        .header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+        .company-logo { width: 50px; height: 50px; object-fit: contain; }
+        .company-info { flex: 1; }
+        .company-name { font-weight: bold; font-size: 14px; color: #1e3a8a; }
+        .company-division { font-size: 12px; color: #4b5563; }
+        .company-address { font-size: 10px; color: #64748b; margin-top: 2px; }
         h1 { text-align: center; font-size: 18px; margin-bottom: 5px; }
         .print-date { text-align: center; color: #666; margin-bottom: 5px; font-size: 11px; }
         .print-periode { text-align: center; font-weight: bold; margin-bottom: 16px; font-size: 13px; }
@@ -887,7 +890,14 @@ const TimeSheet: FC = () => {
         th { background-color: #f0f0f0; font-weight: bold; border: 1px solid #000; padding: 4px; text-align: center; }
         td { border: 1px solid #000; padding: 4px; }
       </style></head><body>
-        <div class="header"><div class="company-name">PT. REKA UTAMA PERSADA</div><div class="company-division">Peralatan</div></div>
+        <div class="header">
+          <img src="${import.meta.env.VITE_API_URL}/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
+          <div class="company-info">
+            <div class="company-name">PT. REKA UTAMA PERSADA</div>
+            <div class="company-division">Divisi Peralatan & Logistik</div>
+            <div class="company-address">Jl. Pangkalan No. 31 RT. 003/RW. 001, Kel. Bantargebang, Kec. Bantar Gebang, Kota Bekasi 17151</div>
+          </div>
+        </div>
         <h1>TIME SHEET ALAT BERAT</h1>
         ${periodeLabel ? `<div class="print-periode">${periodeLabel}</div>` : ''}
         <div class="print-date">Dicetak pada: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
