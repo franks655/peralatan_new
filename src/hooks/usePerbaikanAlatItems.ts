@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/api/client';
 import { useToast } from '@/components/ui/use-toast';
 import { withTimeout } from '@/utils/withTimeout';
+import { useAddSparepartTransaction } from './useSparepartTransactions';
 
 export interface PerbaikanAlatItemDetail {
   id: string;
@@ -19,6 +20,52 @@ export interface PerbaikanAlatItemDetail {
   created_at?: string;
   updated_at?: string;
 }
+
+const EXCLUDED_SERVICE_TYPES = ['service jasa ringan', 'service jasa berat'];
+
+// Helper function to find sparepart by name
+const findSparepartByName = async (namaSparepart: string) => {
+  const { data, error } = await supabase
+    .from('sparepart')
+    .select('*')
+    .ilike('nama_sparepart', namaSparepart)
+    .single();
+
+  if (error) {
+    console.error('Error finding sparepart:', error);
+    return null;
+  }
+
+  return data;
+};
+
+// Helper function to update sparepart stock
+const updateSparepartStock = async (sparepartId: string, quantity: number) => {
+  const { data: currentSparepart, error: fetchError } = await supabase
+    .from('sparepart')
+    .select('sisa_stock')
+    .eq('id', sparepartId)
+    .single();
+
+  if (fetchError) {
+    console.error('Error fetching current stock:', fetchError);
+    throw new Error('Gagal mengambil stock saat ini');
+  }
+
+  const newStock = Math.max(0, (currentSparepart.sisa_stock || 0) - quantity);
+
+  const { error: updateError } = await supabase
+    .from('sparepart')
+    .update({ sisa_stock: newStock })
+    .eq('id', sparepartId);
+
+  if (updateError) {
+    console.error('Error updating stock:', updateError);
+    throw new Error('Gagal mengupdate stock sparepart');
+  }
+
+  return newStock;
+};
 
 export const usePerbaikanAlatItems = (perbaikanAlatId?: string) => {
   return useQuery({
@@ -52,6 +99,7 @@ export const usePerbaikanAlatItems = (perbaikanAlatId?: string) => {
 export const useAddPerbaikanAlatItem = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const addTransaction = useAddSparepartTransaction();
 
   return useMutation({
     mutationFn: async (item: Omit<PerbaikanAlatItemDetail, 'id' | 'created_at' | 'updated_at' | 'total_harga'>) => {
@@ -63,6 +111,50 @@ export const useAddPerbaikanAlatItem = () => {
       }
       if (!item.nama_sparepart) {
         throw new Error('Sparepart/Jasa harus diisi');
+      }
+
+      // Check if this is a service type that should not reduce stock
+      const isExcludedService = EXCLUDED_SERVICE_TYPES.some(
+        type => item.nama_sparepart.toLowerCase().includes(type)
+      );
+
+      // Get perbaikan_alat data for transaction context
+      const { data: perbaikanAlat, error: perbaikanError } = await supabase
+        .from('perbaikan_alat')
+        .select('no_lambung, nama_alat, no_perbaikan')
+        .eq('id', item.perbaikan_alat_id)
+        .single();
+
+      if (perbaikanError) {
+        console.error('Error fetching perbaikan_alat:', perbaikanError);
+      }
+
+      // Find sparepart and update stock if not excluded service
+      if (!isExcludedService) {
+        const sparepart = await findSparepartByName(item.nama_sparepart);
+        
+        if (sparepart) {
+          const quantity = Number(item.quantity) || 1;
+          await updateSparepartStock(sparepart.id, quantity);
+
+          // Create transaction record
+          try {
+            await addTransaction.mutateAsync({
+              sparepart_id: sparepart.id,
+              tanggal: new Date().toISOString(),
+              jenis: 'keluar',
+              jumlah: quantity,
+              satuan: sparepart.satuan || '',
+              no_lambung: perbaikanAlat?.no_lambung || '',
+              nama_alat: perbaikanAlat?.nama_alat || '',
+              no_perbaikan: perbaikanAlat?.no_perbaikan || '',
+              keterangan: `Pemakaian untuk SPK Perbaikan Alat`,
+            });
+          } catch (transactionError) {
+            console.error('Error creating transaction:', transactionError);
+            // Don't throw error for transaction, just log it
+          }
+        }
       }
 
       const { data, error } = await supabase
@@ -86,6 +178,8 @@ export const useAddPerbaikanAlatItem = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['perbaikan-alat-items'] });
+      queryClient.invalidateQueries({ queryKey: ['sparepart'] });
+      queryClient.invalidateQueries({ queryKey: ['sparepartTransactions'] });
       toast({ title: 'Berhasil', description: 'Item perintah kerja berhasil disimpan' });
     },
     onError: (err: Error) => {
