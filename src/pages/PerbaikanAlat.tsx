@@ -499,8 +499,12 @@ const PemeriksaanSection = memo(({
     @page { size: A4 portrait; margin: 1.2cm; }
     body { font-family: 'Segoe UI', Arial, sans-serif; padding: 10px; font-size: 11px; color: #1f2937; line-height: 1.4; }
     .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #d97706; padding-bottom: 8px; margin-bottom: 14px; }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .company-logo { width: 50px; height: 50px; object-fit: contain; }
+    .company-info { flex: 1; }
     .company { font-size: 16px; font-weight: bold; color: #b45309; letter-spacing: 0.5px; }
     .divisi { font-size: 11px; color: #4b5563; }
+    .address { font-size: 10px; color: #64748b; margin-top: 2px; }
     .title-box { text-align: center; margin-bottom: 16px; }
     .title { font-size: 15px; font-weight: bold; color: #111827; text-transform: uppercase; margin-bottom: 3px; letter-spacing: 0.5px; }
     .doc-num { font-size: 11px; color: #4b5563; }
@@ -533,9 +537,13 @@ const PemeriksaanSection = memo(({
 </head>
 <body>
   <div class="header">
-    <div>
-      <div class="company">PT. REKA UTAMA PERSADA</div>
-      <div class="divisi">Divisi Peralatan & Logistik</div>
+    <div class="header-left">
+      <img src="${import.meta.env.VITE_API_URL}/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
+      <div class="company-info">
+        <div class="company">PT. REKA UTAMA PERSADA</div>
+        <div class="divisi">Divisi Peralatan & Logistik</div>
+        <div class="address">Jl. Pangkalan No. 31 RT. 003/RW. 001, Kel. Bantargebang, Kec. Bantar Gebang, Kota Bekasi 17151</div>
+      </div>
     </div>
     <div style="text-align: right; font-size: 10px; color: #64748b;">
       <div>Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>

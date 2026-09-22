@@ -318,17 +318,38 @@ const Invoice = () => {
     });
 
     const itemsHtml = invoice.items?.map((item, index) => `
-      <tr>
-        <td class="center">${index + 1}</td>
-        <td>${item.no_lambung} - ${item.nama_alat}<br/><small style="color: #666;">Periode: 1-${lastDay} ${monthNames[invoice.periode_bulan - 1]} ${invoice.periode_tahun}</small></td>
-        <td class="center">${item.qty}</td>
-        <td>${item.satuan}</td>
-        <td class="num">${formatRupiah(item.harga_sewa)}</td>
-        <td class="center">${item.lama_sewa_jam}</td>
-        <td>${item.satuan_lama_sewa}</td>
-        <td>${item.keterangan || '-'}</td>
-        <td class="num" style="font-weight: bold;">${formatRupiah(item.total_item)}</td>
-      </tr>
+      <div class="item-card">
+        <div class="item-header">
+          <span class="item-no">${index + 1}</span>
+          <span class="item-name">${item.no_lambung} - ${item.nama_alat}</span>
+        </div>
+        <div class="item-details">
+          <div class="detail">
+            <span class="detail-label">Periode</span>
+            <span class="detail-value">1-${lastDay} ${monthNames[invoice.periode_bulan - 1]} ${invoice.periode_tahun}</span>
+          </div>
+          <div class="detail">
+            <span class="detail-label">QTY</span>
+            <span class="detail-value">${item.qty} ${item.satuan}</span>
+          </div>
+          <div class="detail">
+            <span class="detail-label">Harga Sewa</span>
+            <span class="detail-value">${formatRupiah(item.harga_sewa)}</span>
+          </div>
+          <div class="detail">
+            <span class="detail-label">Lama Sewa</span>
+            <span class="detail-value">${item.lama_sewa_jam} ${item.satuan_lama_sewa}</span>
+          </div>
+          <div class="detail">
+            <span class="detail-label">Keterangan</span>
+            <span class="detail-value">${item.keterangan || '-'}</span>
+          </div>
+          <div class="detail detail-total">
+            <span class="detail-label">Total</span>
+            <span class="detail-value">${formatRupiah(item.total_item)}</span>
+          </div>
+        </div>
+      </div>
     `).join('') || '';
 
     printWindow.document.write(`
@@ -340,6 +361,9 @@ const Invoice = () => {
             @page { size: A4; margin: 1cm; }
             body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #333; }
             .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+            .header-left { display: flex; align-items: center; gap: 12px; }
+            .company-logo { width: 50px; height: 50px; object-fit: contain; }
+            .company-info { flex: 1; }
             .company-name { font-size: 16px; font-weight: bold; color: #1e3a8a; letter-spacing: 0.5px; }
             .company-division { font-size: 11px; color: #4b5563; }
             .company-address { font-size: 10px; color: #64748b; margin-top: 4px; }
@@ -361,6 +385,19 @@ const Invoice = () => {
             tfoot tr { background: #f8fafc; font-weight: bold; }
             tfoot td { border-top: 2px solid #64748b; }
 
+            .items-list { margin-bottom: 16px; }
+            .item-card { border: 1px solid #94a3b8; border-radius: 6px; margin-bottom: 10px; overflow: hidden; page-break-inside: avoid; }
+            .item-header { display: flex; align-items: center; gap: 10px; background: #1e293b; color: #fff; padding: 7px 12px; }
+            .item-no { font-weight: bold; font-size: 10.5px; background: rgba(255,255,255,0.18); border-radius: 4px; padding: 2px 8px; flex-shrink: 0; }
+            .item-name { font-weight: bold; font-size: 12.5px; }
+            .item-details { display: grid; grid-template-columns: repeat(6, 1fr); background: #f8fafc; }
+            .detail { padding: 6px 12px; border-right: 1px solid #e2e8f0; border-top: 1px solid #e2e8f0; }
+            .detail:last-child { border-right: none; }
+            .detail-label { display: block; font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.3px; color: #64748b; margin-bottom: 2px; }
+            .detail-value { display: block; font-size: 11.5px; font-weight: 600; color: #0f172a; }
+            .detail-total { background: #eef2ff; }
+            .detail-total .detail-value { color: #1e3a8a; font-size: 12.5px; }
+
             .total-section { margin-top: 20px; text-align: right; }
             .total-label { font-size: 14px; font-weight: bold; }
             .total-value { font-size: 18px; font-weight: bold; color: #000; }
@@ -374,10 +411,13 @@ const Invoice = () => {
         </head>
         <body>
           <div class="header">
-            <div>
-              <div class="company-name">PT. REKA UTAMA PERSADA</div>
-              <div class="company-division">Divisi Peralatan & Logistik</div>
-              <div class="company-address">Jl. Pangkalan No. 31 RT. 003/RW. 001, Kel. Bantargebang, Kec. Bantar Gebang, Kota Bekasi 17151</div>
+            <div class="header-left">
+              <img src="${import.meta.env.VITE_API_URL}/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
+              <div class="company-info">
+                <div class="company-name">PT. REKA UTAMA PERSADA</div>
+                <div class="company-division">Divisi Peralatan & Logistik</div>
+                <div class="company-address">Jl. Pangkalan No. 31 RT. 003/RW. 001, Kel. Bantargebang, Kec. Bantar Gebang, Kota Bekasi 17151</div>
+              </div>
             </div>
             <div class="print-info">
               <div>Status: <strong>${invoice.status === 'paid' ? 'Lunas (Paid)' : invoice.status === 'sent' ? 'Terkirim (Sent)' : 'Draft'}</strong></div>
@@ -401,24 +441,9 @@ const Invoice = () => {
           </div>
 
           <h3 style="text-align: center; margin: 25px 0 15px 0; font-size: 14px; font-weight: bold; color: #333;">DESKRIPSI ALAT</h3>
-          <table>
-            <thead>
-              <tr>
-                <th style="width: 40px;">No</th>
-                <th>Deskripsi Alat</th>
-                <th style="width: 60px;">QTY</th>
-                <th style="width: 80px;">Satuan</th>
-                <th style="width: 100px;">Harga Sewa</th>
-                <th style="width: 60px;">Lama Sewa</th>
-                <th style="width: 80px;">Satuan</th>
-                <th>Ket</th>
-                <th style="width: 120px;">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsHtml}
-            </tbody>
-          </table>
+          <div class="items-list">
+            ${itemsHtml}
+          </div>
 
           <div class="total-section">
             <div class="total-label">Total Keseluruhan Biaya:</div>

@@ -3,9 +3,13 @@
  */
 
 export const PRINT_HEADER = `
-  <div class="print-header" style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; text-align: left;">
-    <div style="font-weight: bold; font-size: 14px;">PT. REKA UTAMA PERSADA</div>
-    <div style="font-size: 12px;">Peralatan</div>
+  <div class="print-header" style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+    <img src="${import.meta.env.VITE_API_URL}/images/logo.png" alt="PT. REKA UTAMA PERSADA" style="width: 50px; height: 50px; object-fit: contain;" onerror="this.style.display='none'" />
+    <div style="flex: 1;">
+      <div style="font-weight: bold; font-size: 14px; color: #1e3a8a;">PT. REKA UTAMA PERSADA</div>
+      <div style="font-size: 12px; color: #4b5563;">Divisi Peralatan & Logistik</div>
+      <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Jl. Pangkalan No. 31 RT. 003/RW. 001, Kel. Bantargebang, Kec. Bantar Gebang, Kota Bekasi 17151</div>
+    </div>
   </div>
 `;
 
