@@ -72,32 +72,30 @@ const findSparepartByName = async (namaSparepart: string) => {
   return null;
 };
 
-// Helper function to update sparepart stock
-const updateSparepartStock = async (sparepartId: string, quantity: number) => {
-  const { data: currentSparepart, error: fetchError } = await supabase
+// Catat pemakaian sparepart sebagai BARIS BARU bertipe 'Pemakaian' di tabel `sparepart`.
+// Halaman Stock Sparepart menghitung sisa stok dengan menjumlahkan baris 'Pembelian'
+// dikurangi baris 'Pemakaian' pada tabel ini — kolom `sisa_stock` pada baris yang sudah
+// ada TIDAK dipakai untuk perhitungan itu, jadi meng-update kolom itu saja tidak akan
+// pernah terlihat di UI.
+const recordSparepartPemakaian = async (sparepart: any, quantity: number) => {
+  const { error } = await supabase
     .from('sparepart')
-    .select('sisa_stock')
-    .eq('id', sparepartId)
-    .single();
+    .insert({
+      nama_sparepart: sparepart.nama_sparepart,
+      deskripsi: sparepart.deskripsi || null,
+      satuan: sparepart.satuan || null,
+      harga: sparepart.harga || 0,
+      jumlah: quantity,
+      sisa_stock: 0,
+      keterangan: 'Pemakaian untuk SPK Perbaikan Alat',
+      tanggal: new Date().toISOString().split('T')[0],
+      jenis: 'Pemakaian',
+    });
 
-  if (fetchError) {
-    console.error('Error fetching current stock:', fetchError);
-    throw new Error('Gagal mengambil stock saat ini');
+  if (error) {
+    console.error('Error recording pemakaian sparepart:', error);
+    throw new Error('Gagal mencatat pemakaian sparepart');
   }
-
-  const newStock = Math.max(0, (currentSparepart.sisa_stock || 0) - quantity);
-
-  const { error: updateError } = await supabase
-    .from('sparepart')
-    .update({ sisa_stock: newStock })
-    .eq('id', sparepartId);
-
-  if (updateError) {
-    console.error('Error updating stock:', updateError);
-    throw new Error('Gagal mengupdate stock sparepart');
-  }
-
-  return newStock;
 };
 
 export const usePerbaikanAlatItems = (perbaikanAlatId?: string) => {
@@ -165,8 +163,8 @@ export const useAddPerbaikanAlatItem = () => {
           console.log('Updating stock for sparepart:', sparepart.id, 'quantity:', quantity);
           
           try {
-            const newStock = await updateSparepartStock(sparepart.id, quantity);
-            console.log('Stock updated successfully. New stock:', newStock);
+            await recordSparepartPemakaian(sparepart, quantity);
+            console.log('Pemakaian sparepart recorded successfully');
 
             // Create transaction record (without perbaikan context for now to avoid errors)
             try {
