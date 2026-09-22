@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Trash2, Printer, Save, Truck } from 'lucide-react';
+import { Plus, Trash2, Printer, Save, Truck, AlertCircle } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import {
   useSuratJalanBySewaAlat,
@@ -57,14 +57,19 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
     yang_menyerahkan_nama: '',
   });
 
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [originalForm, setOriginalForm] = useState<SuratJalan | null>(null);
+
   // Prefill setiap kali dialog dibuka untuk sewa alat tertentu
   useEffect(() => {
     if (!open || !sewaAlat) return;
 
     if (existing) {
       setForm(existing);
+      setOriginalForm(existing);
+      setHasUnsavedChanges(false);
     } else {
-      setForm({
+      const newForm = {
         sewa_alat_internal_id: sewaAlat.id || null,
         no_urut: '',
         nomor: '',
@@ -75,12 +80,16 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
         mengetahui_nama: '',
         yang_menerima_nama: '',
         yang_menyerahkan_nama: '',
-      });
+      };
+      setForm(newForm);
+      setOriginalForm(newForm);
+      setHasUnsavedChanges(false);
     }
   }, [open, sewaAlat, existing]);
 
   const handleFieldChange = (field: keyof SuratJalan, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+    setHasUnsavedChanges(true);
   };
 
   const handleItemChange = (index: number, field: keyof SuratJalanItem, value: string) => {
@@ -89,6 +98,7 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
       items[index] = { ...items[index], [field]: value };
       return { ...prev, items };
     });
+    setHasUnsavedChanges(true);
   };
 
   const handleAddItem = () => {
@@ -128,13 +138,21 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
       } else {
         const saved = await addSuratJalan.mutateAsync(form);
         setForm(saved);
+        setOriginalForm(saved);
       }
+      setHasUnsavedChanges(false);
     } catch (error) {
       console.error('Gagal menyimpan surat jalan:', error);
     }
   };
 
   const handlePrint = () => {
+    if (hasUnsavedChanges && !form.id) {
+      if (!confirm('Data belum disimpan. Apakah Anda yakin ingin mencetak? Data yang dicetak adalah data terbaru yang belum disimpan.')) {
+        return;
+      }
+    }
+
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
       toast({
@@ -171,10 +189,12 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
             @page { size: A4; margin: 1.2cm; }
             * { box-sizing: border-box; }
             body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #1a1a1a; }
-            .top { display: flex; justify-content: flex-end; align-items: flex-start; margin-bottom: 10px; }
-            .company { text-align: right; }
+            .top { display: flex; justify-content: flex-start; align-items: flex-start; margin-bottom: 10px; gap: 12px; }
+            .company-logo { width: 50px; height: 50px; object-fit: contain; }
+            .company-info { flex: 1; }
             .company-name { font-size: 15px; font-weight: bold; color: #1e3a8a; }
             .company-sub { font-size: 10.5px; color: #64748b; margin-top: 2px; }
+            .company-address { font-size: 10px; color: #64748b; margin-top: 2px; }
             .doc-meta { margin-top: 6px; font-size: 11px; }
             .doc-meta div { margin-top: 2px; }
 
@@ -201,9 +221,12 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
         </head>
         <body>
           <div class="top">
-            <div class="company">
+            <img src="/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
+            <div class="company-info">
               <div class="company-name">PT. REKA UTAMA PERSADA</div>
               <div class="company-sub">Divisi Peralatan &amp; Logistik</div>
+              <div class="company-address">Jl. Pangkalan No. 31 RT. 003/RW. 001, Kel. Bantargebang, Kec. Bantar Gebang, Kota Bekasi 17151</div>
+            </div>
               <div class="doc-meta">
                 <div><strong>Nomor</strong> : ${form.nomor || '-'}</div>
                 <div><strong>Tanggal</strong> : ${tanggalText}</div>
@@ -278,6 +301,11 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Truck className="h-5 w-5" /> Surat Jalan {sewaAlat ? `- ${sewaAlat.nama_alat}` : ''}
+            {hasUnsavedChanges && (
+              <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-800 rounded-full flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" /> Belum disimpan
+              </span>
+            )}
           </DialogTitle>
           <DialogDescription>
             Tanda Pengeluaran Barang / Alat di Proyek. Isi, simpan, lalu cetak bila sudah lengkap.
@@ -382,16 +410,14 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
                   type="button"
                   variant="outline"
                   onClick={handlePrint}
-                  disabled={!form.id}
-                  title={!form.id ? 'Simpan surat jalan terlebih dahulu sebelum mencetak' : undefined}
                   className="flex-1"
                 >
                   <Printer className="h-4 w-4 mr-2" /> Cetak
                 </Button>
               </div>
-              {!form.id && (
+              {hasUnsavedChanges && !form.id && (
                 <p className="text-xs text-muted-foreground text-center">
-                  Simpan dulu, tombol Cetak akan aktif setelah data tersimpan.
+                  Data belum disimpan. Tombol Cetak akan menampilkan konfirmasi sebelum mencetak.
                 </p>
               )}
             </div>

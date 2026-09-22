@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Trash2, Printer, Save, ClipboardList } from 'lucide-react';
+import { Plus, Trash2, Printer, Save, ClipboardList, AlertCircle } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import {
   usePreOrderBySewaAlatEksternal,
@@ -53,26 +53,35 @@ export function PreOrderDialog({ open, onClose, sewaAlat }: PreOrderDialogProps)
     items: [emptyItem()],
   });
 
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [originalForm, setOriginalForm] = useState<PreOrder | null>(null);
+
   // Prefill setiap kali dialog dibuka untuk sewa alat eksternal tertentu
   useEffect(() => {
     if (!open || !sewaAlat) return;
 
     if (existing) {
       setForm(existing);
+      setOriginalForm(existing);
+      setHasUnsavedChanges(false);
     } else {
-      setForm({
+      const newForm = {
         sewa_alat_eksternal_id: sewaAlat.id || null,
         nomor_urut: '',
         tanggal: todayISO(),
         kode_pi: '',
         pekerjaan: sewaAlat.lokasi_proyek || '',
         items: [{ nama_barang: sewaAlat.nama_alat || '', volume: '1', estimasi_harga_satuan: '', keterangan: '' }],
-      });
+      };
+      setForm(newForm);
+      setOriginalForm(newForm);
+      setHasUnsavedChanges(false);
     }
   }, [open, sewaAlat, existing]);
 
   const handleFieldChange = (field: keyof PreOrder, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+    setHasUnsavedChanges(true);
   };
 
   const handleItemChange = (index: number, field: keyof PreOrderItem, value: string) => {
@@ -81,6 +90,7 @@ export function PreOrderDialog({ open, onClose, sewaAlat }: PreOrderDialogProps)
       items[index] = { ...items[index], [field]: value };
       return { ...prev, items };
     });
+    setHasUnsavedChanges(true);
   };
 
   const handleAddItem = () => {
@@ -120,13 +130,21 @@ export function PreOrderDialog({ open, onClose, sewaAlat }: PreOrderDialogProps)
       } else {
         const saved = await addPreOrder.mutateAsync(form);
         setForm(saved);
+        setOriginalForm(saved);
       }
+      setHasUnsavedChanges(false);
     } catch (error) {
       console.error('Gagal menyimpan pre-order:', error);
     }
   };
 
   const handlePrint = () => {
+    if (hasUnsavedChanges && !form.id) {
+      if (!confirm('Data belum disimpan. Apakah Anda yakin ingin mencetak? Data yang dicetak adalah data terbaru yang belum disimpan.')) {
+        return;
+      }
+    }
+
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
       toast({
@@ -164,9 +182,12 @@ export function PreOrderDialog({ open, onClose, sewaAlat }: PreOrderDialogProps)
             @page { size: A4; margin: 1.2cm; }
             * { box-sizing: border-box; }
             body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #1a1a1a; }
-            .top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; border-bottom: 2px solid #1e293b; padding-bottom: 10px; }
+            .top { display: flex; justify-content: flex-start; align-items: flex-start; margin-bottom: 8px; border-bottom: 2px solid #1e293b; padding-bottom: 10px; gap: 12px; }
+            .company-logo { width: 50px; height: 50px; object-fit: contain; }
+            .company-info { flex: 1; }
             .company-name { font-size: 16px; font-weight: bold; color: #1e3a8a; letter-spacing: 0.3px; }
             .company-sub { font-size: 10.5px; color: #64748b; margin-top: 2px; }
+            .company-address { font-size: 10px; color: #64748b; margin-top: 2px; }
             .doc-meta { font-size: 11px; text-align: right; }
             .doc-meta div { margin-top: 3px; }
             .doc-meta .lbl { display: inline-block; width: 90px; font-weight: bold; text-align: left; }
@@ -194,9 +215,11 @@ export function PreOrderDialog({ open, onClose, sewaAlat }: PreOrderDialogProps)
         </head>
         <body>
           <div class="top">
-            <div>
-              <div class="company-name">PT. MODERN WIDYA TEHNICAL</div>
-              <div class="company-sub">General Contractor</div>
+            <img src="/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
+            <div class="company-info">
+              <div class="company-name">PT. REKA UTAMA PERSADA</div>
+              <div class="company-sub">Divisi Peralatan &amp; Logistik</div>
+              <div class="company-address">Jl. Pangkalan No. 31 RT. 003/RW. 001, Kel. Bantargebang, Kec. Bantar Gebang, Kota Bekasi 17151</div>
             </div>
             <div class="doc-meta">
               <div><span class="lbl">Nomor Urut</span> : ${form.nomor_urut || '-'}</div>
@@ -269,6 +292,11 @@ export function PreOrderDialog({ open, onClose, sewaAlat }: PreOrderDialogProps)
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ClipboardList className="h-5 w-5" /> Pre-Order {sewaAlat ? `- ${sewaAlat.nama_alat}` : ''}
+            {hasUnsavedChanges && (
+              <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-800 rounded-full flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" /> Belum disimpan
+              </span>
+            )}
           </DialogTitle>
           <DialogDescription>
             Order Material, Alat dan Lain-lain. Isi, simpan, lalu cetak bila sudah lengkap.
@@ -378,16 +406,14 @@ export function PreOrderDialog({ open, onClose, sewaAlat }: PreOrderDialogProps)
                   type="button"
                   variant="outline"
                   onClick={handlePrint}
-                  disabled={!form.id}
-                  title={!form.id ? 'Simpan pre-order terlebih dahulu sebelum mencetak' : undefined}
                   className="flex-1"
                 >
                   <Printer className="h-4 w-4 mr-2" /> Cetak
                 </Button>
               </div>
-              {!form.id && (
+              {hasUnsavedChanges && !form.id && (
                 <p className="text-xs text-muted-foreground text-center">
-                  Simpan dulu, tombol Cetak akan aktif setelah data tersimpan.
+                  Data belum disimpan. Tombol Cetak akan menampilkan konfirmasi sebelum mencetak.
                 </p>
               )}
             </div>
