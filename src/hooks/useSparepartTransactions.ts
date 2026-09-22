@@ -88,9 +88,9 @@ export const useAddSparepartTransaction = () => {
         tanggal: data.tanggal || new Date().toISOString(),
         jenis: data.jenis,
         jumlah: data.jumlah,
-        satuan: data.satuan || null,
-        no_lambung: data.no_lambung || null,
-        keterangan: data.keterangan || null,
+        satuan: data.satuan || '',
+        no_lambung: data.no_lambung || '',
+        keterangan: data.keterangan || '',
       };
 
       // Only include optional fields if they have values
