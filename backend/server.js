@@ -592,6 +592,8 @@ const TABLES = [
   'invoice_items',
   'surat_jalan',
   'surat_jalan_items',
+  'pre_order',
+  'pre_order_items',
 ];
 
 for (const table of TABLES) {

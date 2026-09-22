@@ -20,9 +20,10 @@ import {
   DialogDescription,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, ClipboardList } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { useSewaAlatEksternal, useAddSewaAlatEksternal, useUpdateSewaAlatEksternal, useDeleteSewaAlatEksternal } from '../hooks/useSewaAlatEksternal';
+import { PreOrderDialog } from '../components/dialogs/preorderdialog';
 import { useToast } from '@/components/ui/use-toast';
 import { usePagePermission } from '@/hooks/usePagePermission';
 import { SimplePagination, paginateData, getTotalPages } from '@/components/ui/SimplePagination';
@@ -89,6 +90,15 @@ export default function SewaAlatEksternal() {
 
   // State untuk edit mode
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  // State untuk dialog Pre-Order
+  const [isPreOrderOpen, setIsPreOrderOpen] = useState(false);
+  const [preOrderTarget, setPreOrderTarget] = useState<SewaAlat | null>(null);
+
+  const handleOpenPreOrder = (sewaAlat: SewaAlat) => {
+    setPreOrderTarget(sewaAlat);
+    setIsPreOrderOpen(true);
+  };
 
   const handleEdit = (sewaAlat: SewaAlat) => {
     if (!sewaAlat.id) return;
@@ -910,6 +920,15 @@ export default function SewaAlatEksternal() {
                     {canShowActions && (
                       <TableCell className="whitespace-nowrap">
                         <div className="flex items-center justify-end space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenPreOrder(sewaAlat)}
+                            className="h-8 gap-1.5 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border-indigo-200"
+                          >
+                            <ClipboardList className="h-4 w-4" />
+                            <span>Pre-Order</span>
+                          </Button>
                           {canEdit && (
                             <Button
                               variant="outline"
@@ -950,6 +969,15 @@ export default function SewaAlatEksternal() {
           />
         )}
       </div>
+
+      <PreOrderDialog
+        open={isPreOrderOpen}
+        onClose={() => {
+          setIsPreOrderOpen(false);
+          setPreOrderTarget(null);
+        }}
+        sewaAlat={preOrderTarget}
+      />
     </div>
   );
 }
