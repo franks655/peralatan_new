@@ -118,6 +118,8 @@ export const useAddPerbaikanAlatItem = () => {
         type => item.nama_sparepart.toLowerCase().includes(type)
       );
 
+      console.log('Adding SPK item:', item.nama_sparepart, 'Excluded service:', isExcludedService);
+
       // Get perbaikan_alat data for transaction context
       const { data: perbaikanAlat, error: perbaikanError } = await supabase
         .from('perbaikan_alat')
@@ -127,34 +129,52 @@ export const useAddPerbaikanAlatItem = () => {
 
       if (perbaikanError) {
         console.error('Error fetching perbaikan_alat:', perbaikanError);
+      } else {
+        console.log('Perbaikan Alat data:', perbaikanAlat);
       }
 
       // Find sparepart and update stock if not excluded service
       if (!isExcludedService) {
+        console.log('Finding sparepart:', item.nama_sparepart);
         const sparepart = await findSparepartByName(item.nama_sparepart);
+        
+        console.log('Found sparepart:', sparepart);
         
         if (sparepart) {
           const quantity = Number(item.quantity) || 1;
-          await updateSparepartStock(sparepart.id, quantity);
-
-          // Create transaction record
+          console.log('Updating stock for sparepart:', sparepart.id, 'quantity:', quantity);
+          
           try {
-            await addTransaction.mutateAsync({
-              sparepart_id: sparepart.id,
-              tanggal: new Date().toISOString(),
-              jenis: 'keluar',
-              jumlah: quantity,
-              satuan: sparepart.satuan || '',
-              no_lambung: perbaikanAlat?.no_lambung || '',
-              nama_alat: perbaikanAlat?.nama_alat || '',
-              no_perbaikan: perbaikanAlat?.no_perbaikan || '',
-              keterangan: `Pemakaian untuk SPK Perbaikan Alat`,
-            });
-          } catch (transactionError) {
-            console.error('Error creating transaction:', transactionError);
-            // Don't throw error for transaction, just log it
+            const newStock = await updateSparepartStock(sparepart.id, quantity);
+            console.log('Stock updated successfully. New stock:', newStock);
+
+            // Create transaction record
+            try {
+              await addTransaction.mutateAsync({
+                sparepart_id: sparepart.id,
+                tanggal: new Date().toISOString(),
+                jenis: 'keluar',
+                jumlah: quantity,
+                satuan: sparepart.satuan || '',
+                no_lambung: perbaikanAlat?.no_lambung || '',
+                nama_alat: perbaikanAlat?.nama_alat || '',
+                no_perbaikan: perbaikanAlat?.no_perbaikan || '',
+                keterangan: `Pemakaian untuk SPK Perbaikan Alat`,
+              });
+              console.log('Transaction created successfully');
+            } catch (transactionError) {
+              console.error('Error creating transaction:', transactionError);
+              // Don't throw error for transaction, just log it
+            }
+          } catch (stockError) {
+            console.error('Error updating stock:', stockError);
+            throw new Error('Gagal mengupdate stock sparepart: ' + (stockError as Error).message);
           }
+        } else {
+          console.log('Sparepart not found in database:', item.nama_sparepart);
         }
+      } else {
+        console.log('Skipping stock update for excluded service type');
       }
 
       const { data, error } = await supabase
