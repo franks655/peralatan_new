@@ -390,12 +390,12 @@ const Invoice = () => {
             .item-header { display: flex; align-items: center; gap: 10px; background: #1e293b; color: #fff; padding: 7px 12px; }
             .item-no { font-weight: bold; font-size: 10.5px; background: rgba(255,255,255,0.18); border-radius: 4px; padding: 2px 8px; flex-shrink: 0; }
             .item-name { font-weight: bold; font-size: 12.5px; }
-            .item-details { display: grid; grid-template-columns: repeat(6, 1fr); background: #f8fafc; }
+            .item-details { display: grid; grid-template-columns: repeat(6, 1fr); background: #f8fafc !important; }
             .detail { padding: 6px 12px; border-right: 1px solid #e2e8f0; border-top: 1px solid #e2e8f0; }
             .detail:last-child { border-right: none; }
             .detail-label { display: block; font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.3px; color: #64748b; margin-bottom: 2px; }
             .detail-value { display: block; font-size: 11.5px; font-weight: 600; color: #0f172a; }
-            .detail-total { background: #eef2ff; }
+            .detail-total { background: #eef2ff !important; }
             .detail-total .detail-value { color: #1e3a8a; font-size: 12.5px; }
 
             .total-section { margin-top: 20px; text-align: right; }
@@ -412,7 +412,7 @@ const Invoice = () => {
         <body>
           <div class="header">
             <div class="header-left">
-              <img src="${import.meta.env.VITE_API_URL}/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
+              <img src="/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
               <div class="company-info">
                 <div class="company-name">PT. REKA UTAMA PERSADA</div>
                 <div class="company-division">Divisi Peralatan & Logistik</div>
