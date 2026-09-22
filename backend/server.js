@@ -590,6 +590,8 @@ const TABLES = [
   'perbaikan_alat_pemeriksaan',
   'perbaikan_alat_items',
   'invoice_items',
+  'surat_jalan',
+  'surat_jalan_items',
 ];
 
 for (const table of TABLES) {

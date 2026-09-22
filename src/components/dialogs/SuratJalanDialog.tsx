@@ -171,9 +171,7 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
             @page { size: A4; margin: 1.2cm; }
             * { box-sizing: border-box; }
             body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #1a1a1a; }
-            .top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-            .no-box { border: 1px solid #333; padding: 4px 14px; font-size: 11px; }
-            .no-box .lbl { font-weight: bold; }
+            .top { display: flex; justify-content: flex-end; align-items: flex-start; margin-bottom: 10px; }
             .company { text-align: right; }
             .company-name { font-size: 15px; font-weight: bold; color: #1e3a8a; }
             .company-sub { font-size: 10.5px; color: #64748b; margin-top: 2px; }
@@ -203,7 +201,6 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
         </head>
         <body>
           <div class="top">
-            <div class="no-box"><span class="lbl">No.</span> ${form.no_urut || '-'}</div>
             <div class="company">
               <div class="company-name">PT. REKA UTAMA PERSADA</div>
               <div class="company-sub">Divisi Peralatan &amp; Logistik</div>
@@ -291,16 +288,7 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
           <div className="py-8 text-center text-sm text-muted-foreground">Memuat data surat jalan...</div>
         ) : (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="sj_no_urut">No.</Label>
-                <Input
-                  id="sj_no_urut"
-                  value={form.no_urut}
-                  onChange={(e) => handleFieldChange('no_urut', e.target.value)}
-                  placeholder="Nomor urut internal"
-                />
-              </div>
+            <div className="grid grid-cols-3 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="sj_nomor">Nomor</Label>
                 <Input
@@ -310,9 +298,6 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
                   placeholder="cth. 50743"
                 />
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="sj_tanggal">Tanggal</Label>
                 <Input
@@ -384,43 +369,31 @@ export function SuratJalanDialog({ open, onClose, sewaAlat }: SuratJalanDialogPr
               </div>
             </div>
 
-            <div className="border rounded-lg p-3 space-y-3">
-              <Label className="text-sm font-semibold">Penanda Tangan</Label>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="grid gap-1">
-                  <Label htmlFor="sj_mengetahui" className="text-xs text-muted-foreground">Mengetahui (Site Manager)</Label>
-                  <Input
-                    id="sj_mengetahui"
-                    value={form.mengetahui_nama}
-                    onChange={(e) => handleFieldChange('mengetahui_nama', e.target.value)}
-                  />
-                </div>
-                <div className="grid gap-1">
-                  <Label htmlFor="sj_menerima" className="text-xs text-muted-foreground">Yang Menerima (Sopir)</Label>
-                  <Input
-                    id="sj_menerima"
-                    value={form.yang_menerima_nama}
-                    onChange={(e) => handleFieldChange('yang_menerima_nama', e.target.value)}
-                  />
-                </div>
-                <div className="grid gap-1">
-                  <Label htmlFor="sj_menyerahkan" className="text-xs text-muted-foreground">Yang Menyerahkan (Logistik)</Label>
-                  <Input
-                    id="sj_menyerahkan"
-                    value={form.yang_menyerahkan_nama}
-                    onChange={(e) => handleFieldChange('yang_menyerahkan_nama', e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
+            <p className="text-xs text-muted-foreground">
+              Tanda tangan (Site Manager, Sopir, Logistik) tidak diisi di sini — akan tercetak sebagai kolom kosong pada dokumen untuk ditandatangani manual.
+            </p>
 
-            <div className="flex gap-2 pt-2">
-              <Button type="button" onClick={handleSave} disabled={isSaving} className="flex-1">
-                <Save className="h-4 w-4 mr-2" /> {isSaving ? 'Menyimpan...' : 'Simpan'}
-              </Button>
-              <Button type="button" variant="outline" onClick={handlePrint} className="flex-1">
-                <Printer className="h-4 w-4 mr-2" /> Cetak
-              </Button>
+            <div className="flex flex-col gap-2 pt-2">
+              <div className="flex gap-2">
+                <Button type="button" onClick={handleSave} disabled={isSaving} className="flex-1">
+                  <Save className="h-4 w-4 mr-2" /> {isSaving ? 'Menyimpan...' : 'Simpan'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handlePrint}
+                  disabled={!form.id}
+                  title={!form.id ? 'Simpan surat jalan terlebih dahulu sebelum mencetak' : undefined}
+                  className="flex-1"
+                >
+                  <Printer className="h-4 w-4 mr-2" /> Cetak
+                </Button>
+              </div>
+              {!form.id && (
+                <p className="text-xs text-muted-foreground text-center">
+                  Simpan dulu, tombol Cetak akan aktif setelah data tersimpan.
+                </p>
+              )}
             </div>
           </div>
         )}
