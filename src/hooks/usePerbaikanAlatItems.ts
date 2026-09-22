@@ -217,6 +217,8 @@ export const useAddPerbaikanAlatItem = () => {
       queryClient.invalidateQueries({ queryKey: ['perbaikan-alat-items'] });
       queryClient.invalidateQueries({ queryKey: ['sparepart'] });
       queryClient.invalidateQueries({ queryKey: ['sparepartTransactions'] });
+      // Force refetch sparepart data to ensure UI shows updated stock
+      queryClient.refetchQueries({ queryKey: ['sparepart'] });
       toast({ title: 'Berhasil', description: 'Item perintah kerja berhasil disimpan' });
     },
     onError: (err: Error) => {

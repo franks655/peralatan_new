@@ -12,7 +12,7 @@ import { formatDateDisplay, getTodayLocalDateString, normalizeDateOnly } from '@
 import { TableScrollWrapper } from '@/components/ui/TableScrollWrapper';
 
 const StockSparepart: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'per_jenis' | 'transaksi'>('per_jenis');
+  const [activeTab, setActiveTab] = useState<'per_jenis' | 'transaksi' | 'pengeluaran'>('per_jenis');
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingItem, setEditingItem] = useState<Sparepart | null>(null);
@@ -791,6 +791,25 @@ const StockSparepart: React.FC = () => {
             {filteredData.length}
           </span>
         </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab('pengeluaran');
+            setCurrentPage(1);
+          }}
+          className={`flex items-center gap-2 pb-3 px-4 text-sm font-semibold border-b-2 transition-all ${activeTab === 'pengeluaran'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+        >
+          <ListFilter size={18} />
+          <span>Pengeluaran</span>
+          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${activeTab === 'pengeluaran' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+            }`}>
+            {filteredData.filter(t => t.jenis === 'keluar').length}
+          </span>
+        </button>
       </div>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -808,7 +827,7 @@ const StockSparepart: React.FC = () => {
                 setCurrentPageSummary(1);
               }}
               className="form-input pl-10"
-              placeholder={activeTab === 'per_jenis' ? "Cari jenis / nama sparepart..." : "Cari berdasarkan nama, deskripsi..."}
+              placeholder={activeTab === 'per_jenis' ? "Cari jenis / nama sparepart..." : activeTab === 'transaksi' ? "Cari berdasarkan nama, deskripsi..." : "Cari transaksi pengeluaran..."}
             />
           </div>
           {activeTab === 'transaksi' && (
@@ -831,7 +850,7 @@ const StockSparepart: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-2 w-full sm:w-auto">
-          {activeTab === 'transaksi' && (
+          {(activeTab === 'transaksi' || activeTab === 'pengeluaran') && (
             <>
               {canImport && (
                 <ExcelImportButton
@@ -1192,6 +1211,80 @@ const StockSparepart: React.FC = () => {
               pageSize={pageSize}
               onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
               totalItems={filteredData.length}
+            />
+          )}
+        </div>
+      )}
+
+      {activeTab === 'pengeluaran' && (
+        <div className="glass-card">
+          <TableScrollWrapper>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Nama Sparepart</th>
+                  <th>Jumlah</th>
+                  <th>Satuan</th>
+                  <th>Keterangan</th>
+                  {canShowActions && <th className="print:hidden">Aksi</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {filteredData.filter(t => t.jenis === 'keluar').length > 0 ? (
+                  paginateData(filteredData.filter(t => t.jenis === 'keluar'), currentPage, pageSize).map((item) => (
+                    <tr key={item.id}>
+                      <td>{item.tanggal ? formatDateDisplay(item.tanggal) : '-'}</td>
+                      <td>{item.namaSparepart}</td>
+                      <td>{(item.jumlah || 0).toLocaleString('id-ID')}</td>
+                      <td>{item.satuan || '-'}</td>
+                      <td>{item.keterangan || '-'}</td>
+                      {canShowActions && (
+                        <td className="print:hidden">
+                          <div className="flex gap-2">
+                            {canEdit && (
+                              <button
+                                onClick={() => handleEdit(item)}
+                                className="p-1 text-blue-600 hover:text-blue-800"
+                                disabled={updateSparepartMutation.isPending}
+                                title="Edit Transaksi"
+                              >
+                                <Edit size={18} />
+                              </button>
+                            )}
+                            {canDelete && (
+                              <button
+                                onClick={() => handleDelete(item.id)}
+                                className="p-1 text-red-600 hover:text-red-800"
+                                disabled={deleteSparepartMutation.isPending}
+                                title="Hapus Transaksi"
+                              >
+                                <Trash size={18} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={canShowActions ? 6 : 5} className="text-center py-4">
+                      {searchTerm ? 'Tidak ada data pengeluaran yang sesuai dengan pencarian' : 'Belum ada data pengeluaran tersimpan'}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </TableScrollWrapper>
+          {filteredData.filter(t => t.jenis === 'keluar').length > 0 && (
+            <SimplePagination
+              currentPage={currentPage}
+              totalPages={getTotalPages(filteredData.filter(t => t.jenis === 'keluar').length, pageSize)}
+              onPageChange={setCurrentPage}
+              pageSize={pageSize}
+              onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
+              totalItems={filteredData.filter(t => t.jenis === 'keluar').length}
             />
           )}
         </div>
