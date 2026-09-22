@@ -759,7 +759,7 @@ const FormPerbaikan: React.FC = () => {
         th { background-color: #f2f2f2; font-weight: bold; text-align: center; }
       </style></head><body>
         <div class="header">
-          <img src="${import.meta.env.VITE_API_URL}/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
+          <img src="/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
           <div class="company-info">
             <div class="company-name">PT. REKA UTAMA PERSADA</div>
             <div class="company-division">Divisi Peralatan & Logistik</div>
@@ -823,7 +823,7 @@ const FormPerbaikan: React.FC = () => {
           </head>
           <body>
             <div class="header">
-              <img src="${import.meta.env.VITE_API_URL}/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
+              <img src="/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
               <div class="company-info">
                 <div class="company-name">PT. REKA UTAMA PERSADA</div>
                 <div class="company-division">Divisi Peralatan & Logistik</div>

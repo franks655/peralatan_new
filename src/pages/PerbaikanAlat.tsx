@@ -538,7 +538,7 @@ const PemeriksaanSection = memo(({
 <body>
   <div class="header">
     <div class="header-left">
-      <img src="${import.meta.env.VITE_API_URL}/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
+      <img src="/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
       <div class="company-info">
         <div class="company">PT. REKA UTAMA PERSADA</div>
         <div class="divisi">Divisi Peralatan & Logistik</div>
@@ -1995,6 +1995,7 @@ export default function PerbaikanAlat() {
           quantity: Number(spkForm.quantity) || 1,
           stock: Number(spkForm.stock) || 0,
           harga_satuan: Number(spkForm.harga_satuan) || 0,
+          status: 'pending',
         });
         setEditingSPKItemId(null);
       } else {
@@ -2005,6 +2006,7 @@ export default function PerbaikanAlat() {
           quantity: Number(spkForm.quantity) || 1,
           stock: Number(spkForm.stock) || 0,
           harga_satuan: Number(spkForm.harga_satuan) || 0,
+          status: 'pending',
         });
       }
       setSpkForm(emptySPKForm());

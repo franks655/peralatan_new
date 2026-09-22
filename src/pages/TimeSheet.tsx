@@ -891,7 +891,7 @@ const TimeSheet: FC = () => {
         td { border: 1px solid #000; padding: 4px; }
       </style></head><body>
         <div class="header">
-          <img src="${import.meta.env.VITE_API_URL}/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
+          <img src="/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
           <div class="company-info">
             <div class="company-name">PT. REKA UTAMA PERSADA</div>
             <div class="company-division">Divisi Peralatan & Logistik</div>

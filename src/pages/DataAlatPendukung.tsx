@@ -326,7 +326,7 @@ const DataAlatPendukung = () => {
           </head>
           <body>
             <div class="header">
-              <img src="${import.meta.env.VITE_API_URL}/images/logo.png" alt="IPTA PERDANA" class="company-logo" onerror="this.style.display='none'" />
+              <img src="/images/logo.png" alt="IPTA PERDANA" class="company-logo" onerror="this.style.display='none'" />
               <div class="company-info">
                 <div class="company-name">IPTA PERDANA</div>
                 <div class="company-division">Divisi Infrastruktur - Peralatan</div>

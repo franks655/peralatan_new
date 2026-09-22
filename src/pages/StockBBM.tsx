@@ -619,7 +619,7 @@ const StockBBM = () => {
           <body>
             <div class="print-container">
               <div class="header">
-                <img src="${import.meta.env.VITE_API_URL}/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
+                <img src="/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
                 <div class="company-info">
                   <div class="company-name">PT. REKA UTAMA PERSADA</div>
                   <div class="company-division">Divisi Peralatan & Logistik</div>
@@ -750,7 +750,7 @@ const StockBBM = () => {
     <style>body{font-family:Arial;padding:20px}.header{display:flex;align-items:center;gap:12px;margin-bottom:20px}.company-logo{width:50px;height:50px;object-fit:contain}.company-info{flex:1}.company-name{font-weight:bold;font-size:14px;color:#1e3a8a}.company-division{font-size:12px;color:#4b5563}.company-address{font-size:10px;color:#64748b;margin-top:2px}table{width:100%;border-collapse:collapse;font-size:12px}
     th{background:#1e40af;color:#fff;padding:8px;border:1px solid #ddd}</style></head><body>
     <div class="header">
-      <img src="${import.meta.env.VITE_API_URL}/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
+      <img src="/images/logo.png" alt="PT. REKA UTAMA PERSADA" class="company-logo" onerror="this.style.display='none'" />
       <div class="company-info">
         <div class="company-name">PT. REKA UTAMA PERSADA</div>
         <div class="company-division">Divisi Peralatan & Logistik</div>

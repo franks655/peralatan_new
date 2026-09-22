@@ -40,7 +40,7 @@ const PrintableOilStock: React.FC<PrintableOilStockProps> = ({ transactions, oil
         }
       `}</style>
       <div className="mb-4 pb-2 border-b-2 border-gray-900 flex items-center gap-3" style={{ width: '100%' }}>
-        <img src={`${import.meta.env.VITE_API_URL}/images/logo.png`} alt="PT. REKA UTAMA PERSADA" style={{ width: '50px', height: '50px', objectFit: 'contain' }} onError="this.style.display='none'" />
+        <img src="/images/logo.png" alt="PT. REKA UTAMA PERSADA" style={{ width: '50px', height: '50px', objectFit: 'contain' }} onError={(e) => e.currentTarget.style.display = 'none'} />
         <div className="flex-1">
           <div className="font-bold text-sm text-blue-900">PT. REKA UTAMA PERSADA</div>
           <div className="text-xs text-gray-600">Divisi Peralatan & Logistik</div>
