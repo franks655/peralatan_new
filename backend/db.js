@@ -16,10 +16,10 @@ const pool = mysql.createPool({
   dateStrings: true,   // ← Kembalikan DATE/DATETIME sebagai string "YYYY-MM-DD"
   timezone: '+07:00',  // ← WIB (UTC+7) — sesuai timezone MySQL server lokal
 
-  // ── Fix untuk ETIMEDOUT akibat koneksi idle di-drop shared hosting ──
+  // ── Penanganan koneksi remote shared hosting ──
   enableKeepAlive: true,        // kirim TCP keep-alive supaya koneksi idle tidak dianggap mati
   keepAliveInitialDelay: 10000, // mulai keep-alive setelah 10 detik idle
-  connectTimeout: 10000,        // jangan biarkan proses nyangkut lama saat gagal connect
+  connectTimeout: 30000,        // beri waktu hingga 30 detik untuk koneksi remote hosting
   idleTimeout: 60000,           // pool otomatis buang koneksi yang nganggur > 60 detik
 });
 

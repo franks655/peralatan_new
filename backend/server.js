@@ -52,13 +52,49 @@ app.post('/api/upload-silo', (req, res) => {
   }
 });
 
-// ── Health check ──────────────────────────────────────────
+// ── Health check & Diagnostics ────────────────────────────
 app.get('/api/health', async (req, res) => {
+  const start = Date.now();
+  let outboundIp = 'unknown';
+  try {
+    const ipRes = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(3000) });
+    const ipData = await ipRes.json();
+    outboundIp = ipData.ip;
+  } catch (e) {
+    outboundIp = 'unreachable: ' + e.message;
+  }
+
+  const dbHost = process.env.DB_HOST || 'localhost';
+  const dbPort = process.env.DB_PORT || '3306';
+  const dbName = process.env.DB_NAME || 'peralatan_new';
+  const dbUser = process.env.DB_USER || 'root';
+
   try {
     await db.query('SELECT 1');
-    res.json({ status: 'ok', database: 'connected' });
+    res.json({
+      status: 'ok',
+      database: 'connected',
+      latencyMs: Date.now() - start,
+      outboundIp,
+      dbHost,
+      dbPort,
+      dbName,
+      dbUser
+    });
   } catch (err) {
-    res.status(500).json({ status: 'error', message: err.message });
+    res.status(500).json({
+      status: 'error',
+      message: err.message,
+      code: err.code || null,
+      errno: err.errno || null,
+      syscall: err.syscall || null,
+      latencyMs: Date.now() - start,
+      outboundIp,
+      dbHost,
+      dbPort,
+      dbName,
+      dbUser
+    });
   }
 });
 

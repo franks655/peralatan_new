@@ -133,7 +133,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const { data, error: profileError } = (await withTimeout(
         Promise.resolve(query),
-        10000,
+        25000,
         'PROFILE_LOGIN_TIMEOUT',
       )) as any;
 
