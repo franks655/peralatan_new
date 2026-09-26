@@ -63,7 +63,7 @@ export function SelectAlatBeratSearchable({
           {value && (
             <X 
               className="ml-auto h-4 w-4" 
-              onClick={(e) => {
+              onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 onChange('');
               }}

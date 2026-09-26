@@ -35,10 +35,10 @@ const PrintableAlatPendukung: React.FC<PrintableAlatPendukungProps> = ({ data, t
         <tbody>
           {data.map((item, index) => (
             <tr key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-              <td className="border p-2">{item.kodeNomor || '-'}</td>
+              <td className="border p-2">{item.noLambung || '-'}</td>
               <td className="border p-2">{item.namaAlat}</td>
               <td className="border p-2">{item.jenisAlat || '-'}</td>
-              <td className="border p-2">-</td>
+              <td className="border p-2">{item.tahunPerolehan || '-'}</td>
               <td className="border p-2">
                 <span className={`px-2 py-1 rounded-full text-xs ${
                   item.kondisi === 'Baik' ? 'bg-green-100 text-green-800' :
@@ -48,7 +48,7 @@ const PrintableAlatPendukung: React.FC<PrintableAlatPendukungProps> = ({ data, t
                   {item.kondisi}
                 </span>
               </td>
-              <td className="border p-2">{item.lokasi?.alamat || '-'}</td>
+              <td className="border p-2">{item.lokasi || '-'}</td>
               <td className="border p-2">{item.keterangan || '-'}</td>
             </tr>
           ))}

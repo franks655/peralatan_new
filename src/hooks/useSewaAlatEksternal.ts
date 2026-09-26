@@ -70,15 +70,10 @@ export const useSewaAlatEksternal = (options = {}) => {
           const tglSewaRaw = (item.tanggal_sewa || '').split('T')[0].split('-');
           const tglKembRaw = (item.tanggal_kembali || '').split('T')[0].split('-');
           
-          let diffDays = 1;
           let calculatedStatus = item.status || 'Aktif';
 
           if (tglSewaRaw.length === 3 && tglKembRaw.length === 3) {
-            const startLocal = new Date(Number(tglSewaRaw[0]), Number(tglSewaRaw[1]) - 1, Number(tglSewaRaw[2]));
             const kembaliLocal = new Date(Number(tglKembRaw[0]), Number(tglKembRaw[1]) - 1, Number(tglKembRaw[2]));
-            
-            const diffMs = kembaliLocal.getTime() - startLocal.getTime();
-            diffDays = Math.max(1, Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1);
 
             // Dynamic status based on current date vs kembali date
             const today = new Date();

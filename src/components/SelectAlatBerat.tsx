@@ -23,7 +23,7 @@ interface SelectAlatBeratProps {
 }
 
 export function SelectAlatBerat({ id, value, onChange, onAlatSelected, required, disabled, filterKondisi, filterStatus }: SelectAlatBeratProps) {
-  const { data: alatBeratList, isLoading } = useAlatBerat();
+  const { data: alatBeratList = [], isLoading } = useAlatBerat();
 
   // Filter and sort list by no_lambung
   const sortedList = useMemo(() => {

@@ -133,7 +133,7 @@ export const useTimeSheet = () => {
             .from('timesheet')
             .select('*')
             .order('created_at', { ascending: false })
-            .then(r => r)
+            .then((r: any) => r)
           ),
           15000,
           'TimeSheet Fetch'
@@ -213,7 +213,7 @@ export const useAddTimeSheet = () => {
           .from('timesheet')
           .insert(insertData)
           .select()
-          .single<DBTimesheet>();
+          .single();
         
         if (error) {
           console.error('Supabase error details:', error);
@@ -302,7 +302,7 @@ export const useUpdateTimeSheet = () => {
         .update(updateData)
         .eq('id', data.id)
         .select()
-        .single<DBTimesheet>();
+        .single();
       
       if (error) {
         console.error('Error updating timesheet:', error);

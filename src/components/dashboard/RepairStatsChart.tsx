@@ -139,7 +139,7 @@ const RepairStatsChart = () => {
                   value > 0 ? `${name}: ${((value / total) * 100).toFixed(0)}%` : ''
                 }
               >
-                {repairStats.map((entry, index) => (
+                {repairStats.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>

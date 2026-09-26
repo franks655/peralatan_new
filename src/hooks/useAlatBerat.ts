@@ -6,11 +6,6 @@ import { DEMO_MODE } from '@/contexts/AuthContext';
 // API base URL
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-interface UseAlatBeratReturn {
-  data: AlatBerat[] | [];
-  isLoading: boolean;
-  error: Error | null;
-}
 
 // Helper function to convert camelCase to snake_case for database
 const camelToSnake = (obj: any): any => {
@@ -61,7 +56,7 @@ const MOCK_ALAT_BERAT: AlatBerat[] = [
   },
 ];
 
-export const useAlatBerat = (): UseAlatBeratReturn => {
+export const useAlatBerat = () => {
   return useQuery<AlatBerat[], Error>({
     queryKey: ['alat-berat'],
     queryFn: async () => {

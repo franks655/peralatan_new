@@ -34,14 +34,8 @@ supabase/.env
 dist-new
 dist-lovable
 dist-lovable2
-frontend.zip
-front*.zip
-front*.rar
-backend.zip
-backend/backend.zip
-backend/server.zip
-backend/server2.zip
-backend/emailService.zip
+*.zip
+*.rar
 
 # Upload folders
 backend/uploads

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileText } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
@@ -13,8 +13,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { parseFotoList, SLOT_LABELS } from '@/utils/fotoUtils';
-
-import type { BiayaKendaraan, Kendaraan } from '@/types';
 
 /* ------------------------------------------------------------------ */
 /* Helper format                                                       */
@@ -54,7 +52,7 @@ const DashboardKendaraanTab = () => {
   }, [kendaraanData, biayaData]);
 
   // Set default selection if not set
-  React.useEffect(() => {
+  useEffect(() => {
     if (!selectedNoPol && opsiNoPol.length > 0) {
       setSelectedNoPol(opsiNoPol[0]);
     }

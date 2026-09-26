@@ -91,7 +91,7 @@ export const supabase = supabaseClient || ({
 (async () => {
   try {
     if (supabaseClient) {
-      const { data, error } = await supabase.from('profiles').select('*').limit(1);
+      const { error } = await supabase.from('profiles').select('*').limit(1);
       if (error) {
         console.error('❌ Supabase connection test failed:', error);
       } else {
